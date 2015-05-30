@@ -41,8 +41,8 @@ Create a new file ```.local.json``` and adjust this content.
 			"repository":"https://github.com/<%=author%>/<%=projectName%>.git",
 			"bugs":"https://github.com/<%=author%>/<%=projectName%>/issues",
 			"homepage":"https://github.com/<%=author%>/<%=projectName%>#readme",
-            "packages":'fs-extra pat-extra underscore commander',
-            "devPackages":'should super-agent',
+            "packages":"fs-extra pat-extra underscore commander",
+            "devPackages":"should super-agent",
 			"test":"mocha",
 			"license":"WTF",
 			"blah":true
