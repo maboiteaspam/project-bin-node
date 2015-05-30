@@ -14,18 +14,18 @@ $ npm project-bin-node blah -g
     # Initialize a node project.
     project-bin-node
     
-    project-bin-node -p /some/path
+    project-node -p /some/path
     
     # Version
-    project-bin-node -v
+    project-node -v
     
     # Help
-    project-bin-node -h
+    project-node -h
 ```
 
 ## Configuration
 
-On __project Root__ directory or within your __User Home__ directory.
+On __Project Root__ directory or within your __User Home__ directory.
 
 Or both to override some settings.
 
