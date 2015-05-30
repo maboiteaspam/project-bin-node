@@ -5,8 +5,6 @@ bin helper to initialize a node project.
 Run the following commands to download and install the application:
 
 ```sh
-$ git clone https://github.com/maboiteaspam/project-bin-node.git fixture
-$ cd project-bin-node
 $ npm project-bin-node blah -g
 ```
 
