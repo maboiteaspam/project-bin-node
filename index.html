@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="Project-bin-node : bin helper to initialize a node project.">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Project-bin-node</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/maboiteaspam/project-bin-node">View on GitHub</a>
+
+          <h1 id="project_title">Project-bin-node</h1>
+          <h2 id="project_tagline">bin helper to initialize a node project.</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/maboiteaspam/project-bin-node/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/maboiteaspam/project-bin-node/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>
+<a id="project-bin-node" class="anchor" href="#project-bin-node" aria-hidden="true"><span class="octicon octicon-link"></span></a>project-bin-node</h1>
+
+<p>bin helper to initialize a node project.</p>
+
+<h2>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h2>
+
+<p>Run the following commands to download and install the application:</p>
+
+<div class="highlight highlight-sh"><pre>$ npm project-bin-node blah -g</pre></div>
+
+<h2>
+<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>Usage</h2>
+
+<pre><code>    # Initialize a node project.
+    project-bin-node
+
+    project-node -p /some/path
+
+    # Version
+    project-node -v
+
+    # Help
+    project-node -h
+</code></pre>
+
+<h2>
+<a id="configuration" class="anchor" href="#configuration" aria-hidden="true"><span class="octicon octicon-link"></span></a>Configuration</h2>
+
+<p>On <strong>Project Root</strong> directory or within your <strong>User Home</strong> directory.</p>
+
+<p>Or both to override some settings.</p>
+
+<p>Create a new file <code>.local.json</code> and adjust this content.</p>
+
+<div class="highlight highlight-json"><pre>{
+    <span class="pl-s"><span class="pl-pds">"</span>profileData<span class="pl-pds">"</span></span>:{
+        <span class="pl-s"><span class="pl-pds">"</span>node<span class="pl-pds">"</span></span>:{
+            <span class="pl-s"><span class="pl-pds">"</span>author<span class="pl-pds">"</span></span>:<span class="pl-s"><span class="pl-pds">"</span>maboiteaspam<span class="pl-pds">"</span></span>,
+            <span class="pl-s"><span class="pl-pds">"</span>version<span class="pl-pds">"</span></span>:<span class="pl-s"><span class="pl-pds">"</span>0.0.1<span class="pl-pds">"</span></span>,
+            <span class="pl-s"><span class="pl-pds">"</span>entry<span class="pl-pds">"</span></span>:<span class="pl-s"><span class="pl-pds">"</span>index.js<span class="pl-pds">"</span></span>,
+            <span class="pl-s"><span class="pl-pds">"</span>repository<span class="pl-pds">"</span></span>:<span class="pl-s"><span class="pl-pds">"</span>https://github.com/&lt;%=author%&gt;/&lt;%=projectName%&gt;.git<span class="pl-pds">"</span></span>,
+            <span class="pl-s"><span class="pl-pds">"</span>bugs<span class="pl-pds">"</span></span>:<span class="pl-s"><span class="pl-pds">"</span>https://github.com/&lt;%=author%&gt;/&lt;%=projectName%&gt;/issues<span class="pl-pds">"</span></span>,
+            <span class="pl-s"><span class="pl-pds">"</span>homepage<span class="pl-pds">"</span></span>:<span class="pl-s"><span class="pl-pds">"</span>https://github.com/&lt;%=author%&gt;/&lt;%=projectName%&gt;#readme<span class="pl-pds">"</span></span>,
+            <span class="pl-s"><span class="pl-pds">"</span>packages<span class="pl-pds">"</span></span>:<span class="pl-ii">'fs-extra</span> <span class="pl-ii">pat-extra</span> <span class="pl-ii">underscore</span> <span class="pl-ii">commander'</span>,
+            <span class="pl-s"><span class="pl-pds">"</span>devPackages<span class="pl-pds">"</span></span>:<span class="pl-ii">'should</span> <span class="pl-ii">super-agent'</span>,
+            <span class="pl-s"><span class="pl-pds">"</span>test<span class="pl-pds">"</span></span>:<span class="pl-s"><span class="pl-pds">"</span>mocha<span class="pl-pds">"</span></span>,
+            <span class="pl-s"><span class="pl-pds">"</span>license<span class="pl-pds">"</span></span>:<span class="pl-s"><span class="pl-pds">"</span>WTF<span class="pl-pds">"</span></span>,
+            <span class="pl-s"><span class="pl-pds">"</span>blah<span class="pl-pds">"</span></span>:<span class="pl-c1">true</span>
+        }
+    }
+}</pre></div>
+
+<h2>
+<a id="how-to-contribute" class="anchor" href="#how-to-contribute" aria-hidden="true"><span class="octicon octicon-link"></span></a>How to contribute</h2>
+
+<ol>
+<li>File an issue in the repository, using the bug tracker, describing the
+contribution you'd like to make. This will help us to get you started on the
+right foot.</li>
+<li>Fork the project in your account and create a new branch:
+<code>your-great-feature</code>.</li>
+<li>Commit your changes in that branch.</li>
+<li>Open a pull request, and reference the initial issue in the pull request
+message.</li>
+</ol>
+
+<h2>
+<a id="license" class="anchor" href="#license" aria-hidden="true"><span class="octicon octicon-link"></span></a>License</h2>
+
+<p>See the <a href="./LICENSE">LICENSE</a> file.</p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Project-bin-node maintained by <a href="https://github.com/maboiteaspam">maboiteaspam</a></p>
+        <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
