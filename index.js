@@ -128,6 +128,28 @@ new Config().load().get('local').forEach(function(machine){
       }).stream('blah gitignore', function(){
         this.display();
       });
+    }).when(machine.profileData.node.travis, function(line){
+      var nodeVersions = machine.profileData.node.travis.versions||[process.version];
+      var travisFile = '';
+      travisFile += 'language: nodejs';
+      travisFile += '\n';
+      travisFile += 'node_js:';
+      travisFile += ' - '+nodeVersions.join('\n - ')+'\n';
+      travisFile += 'install:';
+      travisFile += '\n';
+      if(machine.profileData.node.mocha){
+        travisFile += ' - npm i mocha -g';
+        travisFile += '\n';
+      }
+      travisFile += ' - npm i';
+      travisFile += '\n';
+      travisFile += 'script:';
+      travisFile += '\n';
+      travisFile += ' - npm test';
+      travisFile += '\n';
+      line.writeFile('.travis.yml', travisFile, function(){
+        this.display();
+      });
     }).when(machine.profileData.node.mocha, function(line){
       line.mkdir('test', function(){
         this.display();

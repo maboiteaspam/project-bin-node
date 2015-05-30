@@ -45,7 +45,8 @@ Create a new file ```.local.json``` and adjust this content.
             "devPackages":"should super-agent",
 			"test":"mocha",
 			"license":"WTF",
-			"blah":true
+			"blah":true,
+			"travis":{"versions":["0.12","0.11","0.10","0.6","0.8","iojs","iojs-v1.0.4"]}
 		}
 	}
 }
