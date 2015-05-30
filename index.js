@@ -74,6 +74,8 @@ new Config().load().get('local').forEach(function(machine){
       this.display();
     }).stream('touch index.js', function(){
       this.display();
+    }).stream('touch package.json', function(){
+      this.display();
     }).then(function(next){
       var p = {
         "name": projectName,
