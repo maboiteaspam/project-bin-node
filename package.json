@@ -6,6 +6,9 @@
   "scripts": {
     "test": "mocha"
   },
+  "bin": {
+    "project-node": "./index.js"
+  },
   "keywords": [
     "node",
     "init",
