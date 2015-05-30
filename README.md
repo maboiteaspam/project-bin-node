@@ -7,7 +7,7 @@ Run the following commands to download and install the application:
 ```sh
 $ git clone https://github.com/maboiteaspam/project-bin-node.git fixture
 $ cd project-bin-node
-$ npm project-bin-node -g
+$ npm project-bin-node blah -g
 ```
 
 ## Usage
@@ -38,14 +38,13 @@ Create a new file ```.local.json``` and adjust this content.
 	"profileData":{
 		"node":{
 			"author":"maboiteaspam",
-			"license":"",
 			"version":"0.0.1",
 			"entry":"index.js",
 			"repository":"https://github.com/<%=author%>/<%=projectName%>.git",
 			"bugs":"https://github.com/<%=author%>/<%=projectName%>/issues",
 			"homepage":"https://github.com/<%=author%>/<%=projectName%>#readme",
 			"test":"mocha",
-			"license":"WTFPL",
+			"license":"WTF",
 			"blah":true
 		}
 	}
