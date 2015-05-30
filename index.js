@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 var Config = require('project-bin-config');
 var Cluc = require('cluc');
 var cliargs = require('cliargs');
