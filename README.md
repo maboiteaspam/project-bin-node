@@ -10,7 +10,7 @@ $ cd project-bin-node
 $ npm project-bin-node -g
 ```
 
-## Documentation
+## Usage
 
 ```
     # Initialize a node project.
@@ -23,7 +23,33 @@ $ npm project-bin-node -g
     
     # Help
     project-bin-node -h
-    
+```
+
+## Configuration
+
+On __project Root__ directory or within your __User Home__ directory.
+
+Or both to override some settings.
+
+Create a new file ```.local.json``` and adjust this content.
+
+```json
+{
+	"profileData":{
+		"node":{
+			"author":"maboiteaspam",
+			"license":"",
+			"version":"0.0.1",
+			"entry":"index.js",
+			"repository":"https://github.com/<%=author%>/<%=projectName%>.git",
+			"bugs":"https://github.com/<%=author%>/<%=projectName%>/issues",
+			"homepage":"https://github.com/<%=author%>/<%=projectName%>#readme",
+			"test":"mocha",
+			"license":"WTFPL",
+			"blah":true
+		}
+	}
+}
 ```
 
 
