@@ -1,0 +1,27 @@
+{
+  "name": "project-bin-node",
+  "version": "1.0.0",
+  "description": "bin helper to initialize a node project.",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "keywords": [
+    "node",
+    "init",
+    "project",
+    "bin",
+    "helper"
+  ],
+  "author": "maboiteaspam",
+  "license": "WTF",
+  "dependencies": {
+    "cliargs": "^0.1.1",
+    "cluc": "^1.0.28",
+    "project-bin-config": "^1.0.4",
+    "underscore": "^1.8.3"
+  },
+  "devDependencies": {
+    "should": "^6.0.3"
+  }
+}
