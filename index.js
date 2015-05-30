@@ -41,6 +41,8 @@ new Config().load().get('local').forEach(function(machine){
     author:null,
     license:'',
     version:'0.0.1',
+    packages:null,
+    devPackages:null,
     entry:'index.js',
     repository:'https://github.com/<%=author%>/<%=projectName %>',
     test:null
@@ -108,8 +110,16 @@ new Config().load().get('local').forEach(function(machine){
       fs.writeFile(projectPkg, JSON.stringify(p, null, 4), function(){
         next();
       });
-    //}).stream('npm i should fs-extra --save-dev', function(){
-    //  this.display();
+    }).when(machine.profileData.node.packages, function(line){
+      var p = machine.profileData.node.packages;
+      line.stream('npm i '+p+' --save', function(){
+        this.display();
+      });
+    }).when(machine.profileData.node.devPackages, function(line){
+      var p = machine.profileData.node.devPackages;
+      line.stream('npm i '+p+' --save-dev', function(){
+        this.display();
+      });
     }).when(machine.profileData.node.blah, function(line){
       line.stream('blah readme', function(){
         this.display();
