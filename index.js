@@ -81,6 +81,7 @@ new Config().load().get('local').forEach(function(machine){
         "description": "To be done",
         "main": machine.profileData.node.entry,
         "scripts": {},
+        "bin": {},
         "repository": {},
         "keywords": [
           "To",
