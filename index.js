@@ -161,7 +161,7 @@ new Config().load().get('local').forEach(function(machine){
       line.putFile(machine.profileData.node.mochaIndex, '<%= wdPath %>test/index.js', function(){
         this.display();
       });
-    }).stream('git add .travis.yml index.js README.md package.json test/index.js', function(){
+    }).stream('git add .travis.yml index.js README.md package.json test/index.js .gitignore', function(){
       this.display();
     }).stream('git commit -m "project-node init"', function(){
       this.display();
