@@ -53,6 +53,12 @@ Create a new file ```.local.json``` and adjust this content.
 ```
 
 
+## Todo
+
+1. add appveyor support
+2. add linter support
+
+
 ## How to contribute
 
 1. File an issue in the repository, using the bug tracker, describing the
