@@ -1,6 +1,6 @@
 {
   "name": "project-bin-node",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "bin helper to initialize a node project.",
   "main": "index.js",
   "scripts": {
@@ -23,5 +23,8 @@
   },
   "devDependencies": {
     "should": "^6.0.3"
+  },
+  "repository": {
+    "url": "https://github.com/maboiteaspam/project-bin-node"
   }
 }
