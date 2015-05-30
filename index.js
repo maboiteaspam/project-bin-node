@@ -32,8 +32,10 @@ if(argsObj.version){
 }
 
 var wdPath = argsObj.path || argsObj.p || process.cwd();
+wdPath = path.resolve(wdPath)+'/';
 var projectPkg = path.join(wdPath,'package.json');
 var projectName = path.basename(wdPath);
+var gitAddfiles = [];
 
 new Config().load().get('local').forEach(function(machine){
 
@@ -51,7 +53,8 @@ new Config().load().get('local').forEach(function(machine){
   });
 
 
-  new Cluc()
+  var line = new Cluc();
+  line
     .then(function(next){
       if(!machine.profileData.node.author){
         throw 'profileData.node.author is missing';
@@ -74,8 +77,10 @@ new Config().load().get('local').forEach(function(machine){
       this.display();
     }).stream('touch index.js', function(){
       this.display();
+      gitAddfiles.push('<%= wdPath %>index.js');
     }).stream('touch package.json', function(){
       this.display();
+      gitAddfiles.push('<%= wdPath %>package.json');
     }).then(function(next){
       var p = {
         "name": projectName,
@@ -128,44 +133,57 @@ new Config().load().get('local').forEach(function(machine){
     }).when(machine.profileData.node.blah, function(line){
       line.stream('blah readme', function(){
         this.display();
+        gitAddfiles.push('<%= wdPath %>README.md');
       }).stream('blah gitignore', function(){
         this.display();
+        gitAddfiles.push('<%= wdPath %>.gitignore');
       });
     }).when(machine.profileData.node.travis, function(line){
-      var nodeVersions = machine.profileData.node.travis.versions||[process.version];
-      var travisFile = '';
-      travisFile += 'language: nodejs';
-      travisFile += '\n';
-      travisFile += 'node_js:';
-      travisFile += ' - '+nodeVersions.join('\n - ')+'\n';
-      travisFile += 'install:';
-      travisFile += '\n';
-      if(machine.profileData.node.mocha){
-        travisFile += ' - npm i mocha -g';
+      line.then(function(next){
+        var nodeVersions = machine.profileData.node.travis.versions||[process.version];
+        var travisFile = '';
+        travisFile += 'language: nodejs';
         travisFile += '\n';
-      }
-      travisFile += ' - npm i';
-      travisFile += '\n';
-      travisFile += 'script:';
-      travisFile += '\n';
-      travisFile += ' - npm test';
-      travisFile += '\n';
-      line.writeFile('.travis.yml', travisFile, function(){
-        this.display();
+        travisFile += 'node_js:';
+        travisFile += ' - '+nodeVersions.join('\n - ')+'\n';
+        travisFile += 'install:';
+        travisFile += '\n';
+        if(machine.profileData.node.mocha){
+          travisFile += ' - npm i mocha -g';
+          travisFile += '\n';
+        }
+        travisFile += ' - npm i';
+        travisFile += '\n';
+        travisFile += 'script:';
+        travisFile += '\n';
+        travisFile += ' - npm test';
+        travisFile += '\n';
+        line.writeFile('<%= wdPath %>.travis.yml', travisFile, function(){
+          this.display();
+        });
+        gitAddfiles.push('<%= wdPath %>.travis.yml');
+        next();
       });
     }).when(machine.profileData.node.mocha, function(line){
       line.mkdir('test', function(){
         this.display();
       }).writeFile('<%= wdPath %>test/index.js', '\n', function(){
         this.display();
+        gitAddfiles.push('<%= wdPath %>test/index.js');
       });
     }).when(machine.profileData.node.mochaIndex, function(line){
       line.putFile(machine.profileData.node.mochaIndex, '<%= wdPath %>test/index.js', function(){
         this.display();
       });
-    }).stream('git add .travis.yml index.js README.md package.json test/index.js .gitignore', function(){
-      this.display();
-    }).stream('git commit -m "project-node init"', function(){
-      this.display();
+    }).then(function(next){
+      line.each(gitAddfiles, function(f){
+        line.stream('git add '+f, function(){
+          this.display();
+        })
+      });
+      line.stream('git commit -m "project-node init"', function(){
+        this.display();
+      });
+      next();
     }).run(new Cluc.transports.process());
 });
