@@ -5,7 +5,7 @@ bin helper to initialize a node project.
 Run the following commands to download and install the application:
 
 ```sh
-$ npm project-bin-node blah -g
+$ npm project-bin-node -g
 ```
 
 ## Usage
@@ -45,7 +45,6 @@ Create a new file ```.local.json``` and adjust this content.
             "devPackages":"should super-agent",
 			"test":"mocha",
 			"license":"WTF",
-			"blah":true,
 			"travis":{"versions":["0.12","0.11","0.10","0.6","0.8","iojs","iojs-v1.0.4"]}
 		}
 	}

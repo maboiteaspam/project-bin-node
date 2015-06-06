@@ -1,0 +1,9 @@
+language: nodejs
+node_js:
+  - <%= (node.travis.versions||[]).join('\n  - ') %>
+install:<% if(node.mocha){ %>
+  - npm i mocha -g
+<% } %>
+  - npm i
+script:
+  - npm test

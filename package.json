@@ -25,6 +25,7 @@
     "underscore": "^1.8.3"
   },
   "devDependencies": {
+    "path-extra": "^1.0.3",
     "should": "^6.0.3"
   },
   "repository": {

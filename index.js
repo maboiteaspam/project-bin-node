@@ -13,15 +13,15 @@ var argsObj = cliargs.parse();
 if(argsObj.help || argsObj.h){
   console.log('');
   console.log('%s', pkg.name);
-  console.log('\t%s', pkg.description);
+  console.log(' %s', pkg.description);
   console.log('');
   console.log('%s', 'Usage');
-  console.log('\t%s [-p|--path <path>]', pkg.name);
-  console.log('\t%s --version', pkg.name);
-  console.log('\t%s --h|--help', pkg.name);
+  console.log(' %s [-p|--path <path>]', pkg.name);
+  console.log(' %s --version', pkg.name);
+  console.log(' %s --h|--help', pkg.name);
   console.log('');
   console.log('%s', 'Options');
-  console.log('\t-p|--path <path>\t Path to initialize');
+  console.log(' -p|--path <path>\t Path to initialize');
   console.log('');
   process.exit(1 /* ? is correct ? */);
 }
@@ -33,9 +33,9 @@ if(argsObj.version){
 
 var wdPath = argsObj.path || argsObj.p || process.cwd();
 wdPath = path.resolve(wdPath)+'/';
-var projectPkg = path.join(wdPath,'package.json');
 var projectName = path.basename(wdPath);
 var gitAddfiles = [];
+var layout = argsObj.layout || argsObj.l || 'lambda';
 
 new Config().load().get('local').forEach(function(machine){
 
@@ -43,6 +43,12 @@ new Config().load().get('local').forEach(function(machine){
   _.defaults(machine.profileData.node,{
     projectName:projectName,
     author:null,
+    layouts:{
+      lambda:{
+        path:'templates/lambda/',
+        main:'index.js'
+      }
+    },
     license:'',
     version:'0.0.1',
     packages:null,
@@ -75,115 +81,152 @@ new Config().load().get('local').forEach(function(machine){
       this.display();
     }).stream('git init', function(){
       this.display();
-    }).stream('touch index.js', function(){
-      this.display();
-      gitAddfiles.push('<%= wdPath %>index.js');
-    }).stream('touch package.json', function(){
+    })
+
+    .when(layout==='lambda', function (line) {
+      line
+        .subtitle('lambda app')
+        .stream('touch index.js', function(){
+          this.display();
+          gitAddfiles.push('<%= wdPath %>index.js');
+        }).then(function(next){
+          var tplDir = machine.profileData.node.layouts[layout].path|| machine.profileData.node.layouts.lambda.path;
+          var extraData = _.extend({projectName:projectName}, machine.profileData);
+          var nLine = new Cluc()
+            .generateTemplateDir(tplDir, '<%=wdPath%>', extraData, function(){
+              this.display();
+            });
+          next(nLine);
+        });
+    })
+
+    .when(layout==='electron', function (line) {
+      var tplDir = 'templates/electron/';
+      if(machine.profileData.node.layouts[layout]){
+        if(machine.profileData.node.layouts[layout].path){
+          tplDir = machine.profileData.node.layouts[layout].path;
+        }
+      }
+      var extraData = _.extend({projectName:projectName}, machine.profileData);
+      line
+        .subtitle('electron app')
+        .generateTemplateDir(tplDir, '<%=wdPath%>', extraData, function(){
+          this.display();
+        });
+    })
+
+
+    .subtitle('Package JSON')
+    .stream('touch package.json', function(){
       this.display();
       gitAddfiles.push('<%= wdPath %>package.json');
     }).then(function(next){
-      var p = {
-        "name": projectName,
-        "version": machine.profileData.node.version,
-        "description": "To be done",
-        "main": machine.profileData.node.entry,
-        "scripts": {},
-        "bin": {},
-        "repository": {},
-        "keywords": [
-          "To",
-          "be",
-          "done"
-        ],
-        "author": machine.profileData.node.author,
-        "license": machine.profileData.node.license,
-        "bugs": {}
-      };
-      if(machine.profileData.node.test){
-        p.scripts.text = machine.profileData.node.test;
-      }
-      if(machine.profileData.node.repository){
-        p.repository = {
-          "type": "git",
-          "url": _.template(machine.profileData.node.repository)(machine.profileData.node)
-        };
-      }
-      if(machine.profileData.node.bugs){
-        p.bugs = {
-          "url": _.template(machine.profileData.node.bugs)(machine.profileData.node)
-        };
-      }
-      if(machine.profileData.node.homepage){
-        p.homepage =
-          _.template(machine.profileData.node.homepage)(machine.profileData.node);
-      }
-      fs.writeFile(projectPkg, JSON.stringify(p, null, 4), function(){
-        next();
-      });
-    }).when(machine.profileData.node.packages, function(line){
+      var tplFile = machine.profileData.node.packageTplFile||'templates/package.json';
+      tplFile = path.resolve(__dirname, tplFile);
+      var destPath = '<%= wdPath %>package.json';
+      var extraData = _.extend({projectName:projectName}, machine.profileData);
+      var nLine = new Cluc()
+        .generateTemplate(tplFile, destPath, extraData, function(){
+          this.display();
+        });
+      next(nLine);
+    })
+
+    .when(machine.profileData.node.packages, function(line){
       var p = machine.profileData.node.packages;
-      line.stream('npm i '+p+' --save', function(){
+      line
+        .subtitle('Installing default packages')
+        .stream('npm i '+p+' --save', function(){
         this.display();
+        this.spin();
       });
     }).when(machine.profileData.node.devPackages, function(line){
       var p = machine.profileData.node.devPackages;
-      line.stream('npm i '+p+' --save-dev', function(){
+      line
+        .subtitle('Installing default dev-packages')
+        .stream('npm i '+p+' --save-dev', function(){
         this.display();
+        this.spin();
       });
-    }).when(machine.profileData.node.blah, function(line){
-      line.stream('blah readme', function(){
-        this.display();
-        gitAddfiles.push('<%= wdPath %>README.md');
-      }).stream('blah gitignore', function(){
-        this.display();
-        gitAddfiles.push('<%= wdPath %>.gitignore');
-      });
-    }).when(machine.profileData.node.travis, function(line){
-      line.then(function(next){
-        var nodeVersions = machine.profileData.node.travis.versions||[process.version];
-        var travisFile = '';
-        travisFile += 'language: nodejs';
-        travisFile += '\n';
-        travisFile += 'node_js:';
-        travisFile += ' - '+nodeVersions.join('\n - ')+'\n';
-        travisFile += 'install:';
-        travisFile += '\n';
-        if(machine.profileData.node.mocha){
-          travisFile += ' - npm i mocha -g';
-          travisFile += '\n';
-        }
-        travisFile += ' - npm i';
-        travisFile += '\n';
-        travisFile += 'script:';
-        travisFile += '\n';
-        travisFile += ' - npm test';
-        travisFile += '\n';
-        line.writeFile('<%= wdPath %>.travis.yml', travisFile, function(){
+    })
+
+    .stream('touch README.md', function(){
+      this.display();
+      gitAddfiles.push('<%= wdPath %>README.md');
+    }).then(function(next){
+      var tplFile = machine.profileData.node.readmeTplFile||'templates/README.md';
+      tplFile = path.resolve(__dirname, tplFile);
+      var destPath = '<%= wdPath %>README.md';
+      var extraData = _.extend({projectName:projectName}, machine.profileData);
+      var nLine = new Cluc()
+        .subtitle('README')
+        .generateTemplate(tplFile, destPath, extraData, function(){
           this.display();
         });
-        gitAddfiles.push('<%= wdPath %>.travis.yml');
-        next();
-      });
-    }).when(machine.profileData.node.mocha, function(line){
-      line.mkdir('test', function(){
-        this.display();
-      }).writeFile('<%= wdPath %>test/index.js', '\n', function(){
-        this.display();
-        gitAddfiles.push('<%= wdPath %>test/index.js');
-      });
+      next(nLine);
+    })
+
+    .stream('touch .gitignore', function(){
+      this.display();
+      gitAddfiles.push('<%= wdPath %>.gitignore');
+    }).then(function(next){
+      var tplFile = machine.profileData.node.readmeTplFile||'templates/.gitignore';
+      tplFile = path.resolve(__dirname, tplFile);
+      var destPath = '<%= wdPath %>.gitignore';
+      var extraData = _.extend({projectName:projectName}, machine.profileData);
+      var nLine = new Cluc()
+        .subtitle('.gitignore')
+        .generateTemplate(tplFile, destPath, extraData, function(){
+          this.display();
+        });
+      next(nLine);
+    })
+
+    .when(machine.profileData.node.travis, function(line){
+      line
+        .subtitle('Generate travis file')
+        .then(function(next){
+          var tplFile = machine.profileData.node.travis.travisTplFile||'templates/.travis.yml';
+          tplFile = path.resolve(__dirname, tplFile);
+          gitAddfiles.push('<%= wdPath %>.travis.yml');
+          var destPath = '<%= wdPath %>.travis.yml';
+          var extraData = _.extend({projectName:projectName}, machine.profileData);
+          var nLine = new Cluc()
+            .generateTemplate(tplFile, destPath, extraData, function(){
+              this.display();
+            });
+          next(nLine);
+        });
+    })
+
+    .when(machine.profileData.node.mocha, function(line){
+      line
+        .subtitle('Generate test folder')
+        .mkdir('test', function(){
+          this.display();
+        }).writeFile('<%= wdPath %>test/index.js', '\n', function(){
+          this.display();
+          gitAddfiles.push('<%= wdPath %>test/index.js');
+        });
     }).when(machine.profileData.node.mochaIndex, function(line){
       line.putFile(machine.profileData.node.mochaIndex, '<%= wdPath %>test/index.js', function(){
         this.display();
       });
-    }).then(function(next){
-      line.each(gitAddfiles, function(f){
-        line.stream('git add '+f, function(){
+    })
+
+    .then(function(next){
+      var nLine = new Cluc()
+        .subtitle('Git commit')
+        .each(gitAddfiles, function(f, i, nLine){
+          nLine.stream('git add '+f, function(){
+            this.display();
+          })
+        }).stream('git commit -m "project-node init"', function(){
           this.display();
-        })
-      });
-      line.stream('git commit -m "project-node init"', function(){
-        this.display();
-      });
-      next();
-    }).run(new Cluc.transports.process());
+        });
+      next(nLine);
+    })
+
+    .subtitle('All done !')
+    .run(new Cluc.transports.process());
 });

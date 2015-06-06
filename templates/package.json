@@ -1,0 +1,32 @@
+{
+  "name": "<%= projectName %>",
+  "version": "<%= node.version %>",
+  "description": "to write",
+  "main": "<%= node.entry %>",
+  "scripts": {
+<% if(node.mocha){ %>
+    "test": "mocha"
+<% } %>
+  },
+  "bin": {},
+  "keywords": [
+    "To",
+    "be",
+    "done"
+  ],
+  "author": "<%= node.author %>",
+  "license": "<%= node.license %>",
+<% if(node.homepage){ %>
+  "homepage": "<%= node.homepage %>",
+<% } %>
+<% if(node.repository){ %>
+  "repository": {
+    "url": "https://github.com/<%= node.author %>/<%= projectName %>"
+  },
+<% } %>
+<% if(node.bugs){ %>
+  "bugs": {
+    "url": "https://github.com/<%= node.author %>/<%= projectName %>"
+  }
+<% } %>
+}
