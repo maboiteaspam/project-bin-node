@@ -82,6 +82,17 @@ new Config().load().get('local').forEach(function(machine){
     }).stream('git init', function(){
       this.display();
     })
+    .when(machine.profileData.sinopia, function(line){
+      line
+        .subtitle('Starting sinopia')
+        .stream('sinopia', function(){
+          this.display();
+          this.spin();
+        }).stream('npm set registry http://localhost:4873/', function(){
+          this.display();
+          this.spin();
+        });
+    })
 
     .when(layout==='lambda', function (line) {
       line
@@ -225,6 +236,15 @@ new Config().load().get('local').forEach(function(machine){
           this.display();
         });
       next(nLine);
+    })
+
+    .when(machine.profileData.sinopia, function(line){
+      line
+        .subtitle('Reset npm registry')
+        .stream('npm set registry https://registry.npmjs.org/', function(){
+          this.display();
+          this.spin();
+        });
     })
 
     .subtitle('All done !')
