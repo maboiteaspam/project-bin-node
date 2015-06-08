@@ -12,7 +12,7 @@ $ npm project-bin-node -g
 
 ```
     # Initialize a lambda node project.
-    project-bin-node
+    project-node
     project-node -l lambda
     
     # Initialize an electron project.
