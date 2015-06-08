@@ -11,9 +11,14 @@ $ npm project-bin-node -g
 ## Usage
 
 ```
-    # Initialize a node project.
+    # Initialize a lambda node project.
     project-bin-node
+    project-node -l lambda
     
+    # Initialize an electron project.
+    project-node -l electron
+    
+    # Initialize a specific path.
     project-node -p /some/path
     
     # Version

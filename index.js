@@ -61,6 +61,7 @@ new Config().load().get('local').forEach(function(machine){
 
   var line = new Cluc();
   line
+    .title('Generating a new project')
     .then(function(next){
       if(!machine.profileData.node.author){
         throw 'profileData.node.author is missing';
@@ -81,6 +82,40 @@ new Config().load().get('local').forEach(function(machine){
       this.display();
     }).stream('git init', function(){
       this.display();
+    })
+
+    .subtitle('Package JSON')
+    .stream('touch package.json', function(){
+      this.display();
+      gitAddfiles.push('<%= wdPath %>package.json');
+    }).then(function(next){
+      var tplFile = machine.profileData.node.packageTplFile||'templates/package.json';
+      tplFile = path.resolve(__dirname, tplFile);
+      var destPath = '<%= wdPath %>package.json';
+      var extraData = _.extend({projectName:projectName}, machine.profileData);
+      var nLine = new Cluc()
+        .generateTemplate(tplFile, destPath, extraData, function(){
+          this.display();
+        });
+      next(nLine);
+    })
+
+    .when(machine.profileData.node.packages, function(line){
+      var p = machine.profileData.node.packages;
+      line
+        .subtitle('Installing default packages')
+        .stream('npm i '+p+' --save', function(){
+          this.display();
+          this.spin();
+        });
+    }).when(machine.profileData.node.devPackages, function(line){
+      var p = machine.profileData.node.devPackages;
+      line
+        .subtitle('Installing default dev-packages')
+        .stream('npm i '+p+' --save-dev', function(){
+          this.display();
+          this.spin();
+        });
     })
 
     .when(layout==='lambda', function (line) {
@@ -112,42 +147,20 @@ new Config().load().get('local').forEach(function(machine){
         .subtitle('electron app')
         .generateTemplateDir(tplDir, '<%=wdPath%>', extraData, function(){
           this.display();
-        });
-    })
-
-
-    .subtitle('Package JSON')
-    .stream('touch package.json', function(){
-      this.display();
-      gitAddfiles.push('<%= wdPath %>package.json');
-    }).then(function(next){
-      var tplFile = machine.profileData.node.packageTplFile||'templates/package.json';
-      tplFile = path.resolve(__dirname, tplFile);
-      var destPath = '<%= wdPath %>package.json';
-      var extraData = _.extend({projectName:projectName}, machine.profileData);
-      var nLine = new Cluc()
-        .generateTemplate(tplFile, destPath, extraData, function(){
+        }).stream('npm i electron-prebuilt --save-dev', function(){
           this.display();
+          this.spin();
+        }).then(function(next){
+          var projectPkg = fs.readFileSync(wdPath+'/package.json', 'utf8');
+          projectPkg = JSON.parse(projectPkg);
+          projectPkg.scripts = projectPkg.scripts || {};
+          if(projectPkg.scripts.start){
+            projectPkg.scripts.startOld = projectPkg.scripts.start;
+          }
+          projectPkg.bin = projectPkg.bin || {};
+          projectPkg.bin[projectName] = './bin/cli.js';
+          next();
         });
-      next(nLine);
-    })
-
-    .when(machine.profileData.node.packages, function(line){
-      var p = machine.profileData.node.packages;
-      line
-        .subtitle('Installing default packages')
-        .stream('npm i '+p+' --save', function(){
-        this.display();
-        this.spin();
-      });
-    }).when(machine.profileData.node.devPackages, function(line){
-      var p = machine.profileData.node.devPackages;
-      line
-        .subtitle('Installing default dev-packages')
-        .stream('npm i '+p+' --save-dev', function(){
-        this.display();
-        this.spin();
-      });
     })
 
     .stream('touch README.md', function(){
