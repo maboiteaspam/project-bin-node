@@ -5,7 +5,7 @@ bin helper to initialize a node project.
 Run the following commands to download and install the application:
 
 ```sh
-$ npm project-bin-node -g
+$ npm i project-bin-node -g
 ```
 
 ## Usage
