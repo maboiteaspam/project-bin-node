@@ -20,6 +20,19 @@ app.on('ready', function () {
     show: false
   })
 
+  var globalShortcut = require('global-shortcut');
+  var ret = globalShortcut.register('F12', function() {
+    console.error('F12 is pressed');
+    win.toggleDevTools();
+  })
+  if (!ret) {
+    console.error('registration failed');
+  }
+
+  app.on('quit', function(){
+    globalShortcut.unregisterAll();
+  })
+
   win.loadUrl('file://' + path.join(__dirname, 'static', 'app', 'index.html#' + JSON.stringify(process.argv.slice(2))))
 
   win.show()
