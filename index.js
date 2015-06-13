@@ -168,7 +168,7 @@ new Config().load().get('local').forEach(function(machine){
             });
             next();
           });
-        }).stream('npm i electron-prebuilt electron-packager menubar --save-dev', function(){
+        }).stream('npm i electron-prebuilt electron-packager --save-dev', function(){
           this.display();
           this.spin();
         }).then(function(next){
