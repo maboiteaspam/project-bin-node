@@ -15,7 +15,9 @@
     "done"
   ],
   "author": "<%= node.author %>",
+<% if(node.license){ %>
   "license": "<%= node.license %>",
+<% } %>
 <% if(node.homepage){ %>
   "homepage": "<%= node.homepage %>",
 <% } %>
