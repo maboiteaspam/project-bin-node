@@ -20,9 +20,12 @@ if(argsObj.help || argsObj.h){
   console.log(' %s [-p|--path <path>]', pkg.name);
   console.log(' %s --version', pkg.name);
   console.log(' %s --h|--help', pkg.name);
+  console.log(' %s -nocommit', pkg.name);
   console.log('');
   console.log('%s', 'Options');
   console.log(' -p|--path <path>\t Path to initialize');
+  console.log(' -l|--layout <layout>\t App layout to use lamba|electron');
+  console.log(' -n|-nocommit \t Do not commit after update');
   console.log('');
   process.exit(1 /* ? is correct ? */);
 }
@@ -34,9 +37,11 @@ if(argsObj.version){
 
 var wdPath = argsObj.path || argsObj.p || process.cwd();
 wdPath = path.resolve(wdPath)+'/';
+var noCommit = 'nocommit' in argsObj;
 var projectName = path.basename(wdPath);
 var gitAddfiles = [];
 var layout = argsObj.layout || argsObj.l || 'lambda';
+console.log(noCommit)
 
 new Config().load().get('local').forEach(function(machine){
 
@@ -273,17 +278,21 @@ new Config().load().get('local').forEach(function(machine){
       });
     })
 
-    .then(function(next, nLine){
-      nLine.subtitle('Git commit')
-        .each(gitAddfiles, function(f, i, nLine){
-          nLine.stream('git add '+f, function(){
+    .when(!noCommit, function(line){
+      line.then(function(next, nLine){
+        nLine.subtitle('Git commit')
+          .each(gitAddfiles, function(f, i, nLine){
+            nLine.stream('git add '+f, function(){
+              this.display();
+            })
+          }).stream('git commit -m "project-node init"', function(){
             this.display();
-          })
-        }).stream('git commit -m "project-node init"', function(){
-          this.display();
-        });
-      next(nLine);
+          });
+        next(nLine);
+      })
     })
+
+
 
     .subtitle('All done !')
     .run(new Cluc.transports.process());
