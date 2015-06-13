@@ -28,6 +28,13 @@ app.on('ready', function () {
   if (!ret) {
     console.error('registration failed');
   }
+  var ret = globalShortcut.register('F5', function() {
+    console.error('F5 is pressed');
+    win.reload();
+  })
+  if (!ret) {
+    console.error('registration failed');
+  }
 
   app.on('quit', function(){
     globalShortcut.unregisterAll();
