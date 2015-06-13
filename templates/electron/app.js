@@ -7,13 +7,13 @@ var path = require('path')
 var ipc = require('ipc')
 
 var win
-var link
 var ready = false
 
 var frame = process.platform === 'win32'
 
 // #region app init
 app.on('ready', function () {
+  ready = true
   win = new BrowserWindow({
     title: pkg.name + '@' + pkg.version,
     width: 860,
@@ -94,10 +94,5 @@ app.on('ready', function () {
     win.show()
   })
 
-  ipc.on('ready', function () {
-    ready = true
-    if (link) win.send('add-to-playlist', [].concat(link))
-    win.show()
-  })
 })
 // #endregion
