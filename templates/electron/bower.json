@@ -2,12 +2,12 @@
   "name": "<%= projectName %>",
   "version": "<%= bower.version %>",
   "authors": [
-    "<%= bower.author %>",
+    "<%= bower.author %>"
   ],
 <% if(bower.license){ %>
   "license": "<%= bower.license %>",
 <% } %>
 <% if(bower.ignore){ %>
-  "ignore": <%=JSON.stringify(bower.ignore)%>,
+  "ignore": <%=JSON.stringify(bower.ignore)%>
 <% } %>
 }
