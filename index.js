@@ -7,6 +7,7 @@ var path = require('path');
 var fs = require('fs');
 var _ = require('underscore');
 var pkg = require('./package.json');
+var glob = require('glob');
 
 var argsObj = cliargs.parse();
 
@@ -88,16 +89,15 @@ new Config().load().get('local').forEach(function(machine){
     .stream('touch package.json', function(){
       this.display();
       gitAddfiles.push('<%= wdPath %>package.json');
-    }).then(function(next){
+    }).then(function(next, nLine){
       var tplFile = machine.profileData.node.packageTplFile||'templates/package.json';
       tplFile = path.resolve(__dirname, tplFile);
       var destPath = '<%= wdPath %>package.json';
       var extraData = _.extend({projectName:projectName}, machine.profileData);
-      var nLine = new Cluc()
-        .generateTemplate(tplFile, destPath, extraData, function(){
+      nLine.generateTemplate(tplFile, destPath, extraData, function(){
           this.display();
         });
-      next(nLine);
+      next();
     })
 
     .when(machine.profileData.node.packages, function(line){
@@ -119,102 +119,130 @@ new Config().load().get('local').forEach(function(machine){
     })
 
     .when(layout==='lambda', function (line) {
-      line
-        .subtitle('lambda app')
+      var tplDir = machine.profileData.node.layouts[layout].path|| machine.profileData.node.layouts.lambda.path;
+      var extraData = _.extend({projectName:projectName}, machine.profileData);
+      line.subtitle('lambda app')
         .stream('touch index.js', function(){
           this.display();
           gitAddfiles.push('<%= wdPath %>index.js');
-        }).then(function(next){
-          var tplDir = machine.profileData.node.layouts[layout].path|| machine.profileData.node.layouts.lambda.path;
-          var extraData = _.extend({projectName:projectName}, machine.profileData);
-          var nLine = new Cluc()
-            .generateTemplateDir(tplDir, '<%=wdPath%>', extraData, function(){
+        }).then(function(next, nLine){
+          nLine.generateTemplateDir(tplDir, '<%=wdPath%>', extraData, function(){
               this.display();
+            }).then(function(next_){
+            var options = {
+              cwd: tplDir,
+              dot: true,
+              nodir: true
+            };
+            glob( '**', options, function (er, files) {
+              files.forEach(function(f){
+                gitAddfiles.push('<%= wdPath %>/' + f);
+              });
+              next_();
             });
-          next(nLine);
+          });
+          next();
         });
     })
 
     .when(layout==='electron', function (line) {
-      var tplDir = 'templates/electron/';
+      var tplDir = path.join(__dirname, 'templates/electron/');
       if(machine.profileData.node.layouts[layout]){
         if(machine.profileData.node.layouts[layout].path){
           tplDir = machine.profileData.node.layouts[layout].path;
         }
       }
       var extraData = _.extend({projectName:projectName}, machine.profileData);
-      line
-        .subtitle('electron app')
+      line.subtitle('electron app')
         .generateTemplateDir(tplDir, '<%=wdPath%>', extraData, function(){
           this.display();
-        }).stream('npm i electron-prebuilt --save-dev', function(){
+        }).then(function(next){
+          var options = {
+            cwd: tplDir,
+            dot: true,
+            nodir: true
+          };
+          glob( '**', options, function (er, files) {
+            files.forEach(function(f){
+              gitAddfiles.push('<%= wdPath %>/' + f);
+            });
+            next();
+          });
+        }).stream('npm i electron-prebuilt electron-packager menubar --save-dev', function(){
           this.display();
           this.spin();
         }).then(function(next){
           var projectPkg = fs.readFileSync(wdPath+'/package.json', 'utf8');
           projectPkg = JSON.parse(projectPkg);
           projectPkg.scripts = projectPkg.scripts || {};
-          if(projectPkg.scripts.start){
-            projectPkg.scripts.startOld = projectPkg.scripts.start;
+          var electronMain = 'app.js';
+          if(projectPkg.main
+            && projectPkg.main!==electronMain){
+            projectPkg.mainOld = projectPkg.main;
           }
+          projectPkg.main = electronMain
+          var electronStart = 'node bin.js';
+          if(projectPkg.scripts.start
+            && projectPkg.scripts.start!==electronStart){
+              projectPkg.scripts.startOld = projectPkg.scripts.start;
+          }
+          projectPkg.scripts.start = electronStart;
           projectPkg.bin = projectPkg.bin || {};
-          projectPkg.bin[projectName] = './bin/cli.js';
+          projectPkg.bin[projectName] = './bin.js';
+          fs.writeFileSync(wdPath+'/package.json', JSON.stringify(projectPkg, null, 4), 'utf-8')
           next();
         });
     })
 
-    .stream('touch README.md', function(){
-      this.display();
-      gitAddfiles.push('<%= wdPath %>README.md');
-    }).then(function(next){
+    .then(function(next, nLine){
       var tplFile = machine.profileData.node.readmeTplFile||'templates/README.md';
       tplFile = path.resolve(__dirname, tplFile);
       var destPath = '<%= wdPath %>README.md';
       var extraData = _.extend({projectName:projectName}, machine.profileData);
-      var nLine = new Cluc()
-        .subtitle('README')
+      nLine.subtitle('README')
+        .stream('touch README.md', function(){
+          this.display();
+          gitAddfiles.push('<%= wdPath %>README.md');
+        })
         .generateTemplate(tplFile, destPath, extraData, function(){
           this.display();
         });
-      next(nLine);
+      next();
     })
 
-    .stream('touch .gitignore', function(){
-      this.display();
-      gitAddfiles.push('<%= wdPath %>.gitignore');
-    }).then(function(next){
+    .then(function(next, nLine){
       var tplFile = machine.profileData.node.readmeTplFile||'templates/.gitignore';
       tplFile = path.resolve(__dirname, tplFile);
       var destPath = '<%= wdPath %>.gitignore';
       var extraData = _.extend({projectName:projectName}, machine.profileData);
-      var nLine = new Cluc()
-        .subtitle('.gitignore')
+      nLine.subtitle('.gitignore')
+        .stream('touch .gitignore', function(){
+          this.display();
+          gitAddfiles.push('<%= wdPath %>.gitignore');
+        })
         .generateTemplate(tplFile, destPath, extraData, function(){
           this.display();
         });
-      next(nLine);
+      next();
     })
 
     .when(machine.profileData.node.travis, function(line){
-      line
-        .subtitle('Generate travis file')
-        .then(function(next){
+      line.subtitle('Generate travis file')
+        .then(function(next, nLine){
           var tplFile = machine.profileData.node.travis.travisTplFile||'templates/.travis.yml';
           tplFile = path.resolve(__dirname, tplFile);
           gitAddfiles.push('<%= wdPath %>.travis.yml');
           var destPath = '<%= wdPath %>.travis.yml';
           var extraData = _.extend({projectName:projectName}, machine.profileData);
-          var nLine = new Cluc()
-            .generateTemplate(tplFile, destPath, extraData, function(){
+          nLine.generateTemplate(tplFile, destPath, extraData, function(){
               this.display();
             });
-          next(nLine);
+          next();
         });
     })
 
     .when(machine.profileData.node.mocha, function(line){
-      line
-        .subtitle('Generate test folder')
+      line.subtitle('Generate test folder')
         .mkdir('test', function(){
           this.display();
         }).writeFile('<%= wdPath %>test/index.js', '\n', function(){
@@ -227,9 +255,8 @@ new Config().load().get('local').forEach(function(machine){
       });
     })
 
-    .then(function(next){
-      var nLine = new Cluc()
-        .subtitle('Git commit')
+    .then(function(next, nLine){
+      nLine.subtitle('Git commit')
         .each(gitAddfiles, function(f, i, nLine){
           nLine.stream('git add '+f, function(){
             this.display();

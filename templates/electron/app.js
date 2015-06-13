@@ -25,7 +25,7 @@ app.on('ready', function () {
 })
 
 var menubar = require('menubar');
-var mb = menubar({dir: __dirname});
+var mb = menubar({dir: path.join(__dirname, 'static', 'menubar')});
 mb.on('ready', function ready () {
   console.log('app is ready')
 })
