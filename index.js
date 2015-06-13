@@ -55,8 +55,24 @@ new Config().load().get('local').forEach(function(machine){
     packages:null,
     devPackages:null,
     entry:'index.js',
-    repository:'https://github.com/<%=author%>/<%=projectName %>',
+    repository:'https://github.com/<%=node.author%>/<%=projectName %>',
     test:null
+  });
+
+  _.defaults(machine.profileData,{bower:{}});
+  _.defaults(machine.profileData.bower,{
+    projectName:projectName,
+    author:null,
+    license:'',
+    version:'0.0.1',
+    "ignore": [
+      "**/.*",
+      "node_modules",
+      "bower_components",
+      "static/app/components/",
+      "test",
+      "tests"
+    ]
   });
 
 
@@ -71,13 +87,9 @@ new Config().load().get('local').forEach(function(machine){
         throw 'profileData.node.repository is missing';
       }
       this.saveValue('wdPath', wdPath);
-      this.saveValue('author', machine.profileData.node.author);
       this.saveValue('projectName', projectName);
       this.saveValue('projectVersion', machine.profileData.node.version);
       this.saveValue('test', machine.profileData.node.test);
-      this.saveValue('license', machine.profileData.node.license);
-      this.saveValue('entry', machine.profileData.node.entry);
-      this.saveValue('repository', machine.profileData.node.repository);
       next();
     }).stream('cd <%= wdPath %>', function(){
       this.display();
@@ -171,6 +183,9 @@ new Config().load().get('local').forEach(function(machine){
         }).stream('npm i electron-prebuilt electron-packager --save-dev', function(){
           this.display();
           this.spin();
+        }).stream('bower i jquery --save', function(){
+          this.display();
+          this.spin();
         }).then(function(next){
           var projectPkg = fs.readFileSync(wdPath+'/package.json', 'utf8');
           projectPkg = JSON.parse(projectPkg);
@@ -222,6 +237,9 @@ new Config().load().get('local').forEach(function(machine){
         })
         .generateTemplate(tplFile, destPath, extraData, function(){
           this.display();
+        })
+        .when(layout==='electron', function(line){
+          line.ensureFileContains('<%= wdPath %>.gitignore', '\nstatic/app/components/');
         });
       next();
     })
