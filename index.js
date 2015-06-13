@@ -188,6 +188,9 @@ new Config().load().get('local').forEach(function(machine){
         }).stream('npm i electron-prebuilt electron-packager --save-dev', function(){
           this.display();
           this.spin();
+        }).stream('npm i titlebar --save', function(){
+          this.display();
+          this.spin();
         }).stream('bower i jquery --save', function(){
           this.display();
           this.spin();
