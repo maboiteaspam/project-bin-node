@@ -67,9 +67,9 @@ new Config().load().get('local').forEach(function(machine){
   _.defaults(machine.profileData,{bower:{}});
   _.defaults(machine.profileData.bower,{
     projectName:projectName,
-    author:null,
+    author:machine.profileData.node.author,
     license:'',
-    version:'0.0.1',
+    version:machine.profileData.node.version || '0.0.1',
     "ignore": [
       "**/.*",
       "node_modules",
