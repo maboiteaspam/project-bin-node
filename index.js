@@ -37,7 +37,7 @@ if(argsObj.version){
 
 var wdPath = argsObj.path || argsObj.p || process.cwd();
 wdPath = path.resolve(wdPath)+'/';
-var noCommit = 'nocommit' in argsObj;
+var noCommit = 'nocommit' in argsObj || 'n' in argsObj;
 var projectName = path.basename(wdPath);
 var gitAddfiles = [];
 var layout = argsObj.layout || argsObj.l || 'lambda';
