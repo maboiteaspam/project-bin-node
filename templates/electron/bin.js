@@ -8,4 +8,4 @@ console.log(electron)
 
 // spawn electron
 var pkg = require('./package.json')
-var child = proc.spawn(electron, [pkg.main || 'app.js'])
+var child = proc.spawn(electron, [pkg.main || 'app.js'], {stdio:'inherit'})
