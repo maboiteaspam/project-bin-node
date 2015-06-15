@@ -41,14 +41,19 @@
 
 <p>Run the following commands to download and install the application:</p>
 
-<div class="highlight highlight-sh"><pre>$ npm project-bin-node blah -g</pre></div>
+<div class="highlight highlight-sh"><pre>$ npm i project-bin-node -g</pre></div>
 
 <h2>
 <a id="usage" class="anchor" href="#usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>Usage</h2>
 
-<pre><code>    # Initialize a node project.
-    project-bin-node
+<pre><code>    # Initialize a lambda node project.
+    project-node
+    project-node -l lambda
 
+    # Initialize an electron project.
+    project-node -l electron
+
+    # Initialize a specific path.
     project-node -p /some/path
 
     # Version
@@ -76,14 +81,22 @@
             <span class="pl-s"><span class="pl-pds">"</span>repository<span class="pl-pds">"</span></span>:<span class="pl-s"><span class="pl-pds">"</span>https://github.com/&lt;%=author%&gt;/&lt;%=projectName%&gt;.git<span class="pl-pds">"</span></span>,
             <span class="pl-s"><span class="pl-pds">"</span>bugs<span class="pl-pds">"</span></span>:<span class="pl-s"><span class="pl-pds">"</span>https://github.com/&lt;%=author%&gt;/&lt;%=projectName%&gt;/issues<span class="pl-pds">"</span></span>,
             <span class="pl-s"><span class="pl-pds">"</span>homepage<span class="pl-pds">"</span></span>:<span class="pl-s"><span class="pl-pds">"</span>https://github.com/&lt;%=author%&gt;/&lt;%=projectName%&gt;#readme<span class="pl-pds">"</span></span>,
-            <span class="pl-s"><span class="pl-pds">"</span>packages<span class="pl-pds">"</span></span>:<span class="pl-s"><span class="pl-pds">"</span>fs-extra pat-extra underscore commander<span class="pl-pds">"</span></span>,
+            <span class="pl-s"><span class="pl-pds">"</span>packages<span class="pl-pds">"</span></span>:<span class="pl-s"><span class="pl-pds">"</span>fs-extra path-extra underscore commander<span class="pl-pds">"</span></span>,
             <span class="pl-s"><span class="pl-pds">"</span>devPackages<span class="pl-pds">"</span></span>:<span class="pl-s"><span class="pl-pds">"</span>should super-agent<span class="pl-pds">"</span></span>,
             <span class="pl-s"><span class="pl-pds">"</span>test<span class="pl-pds">"</span></span>:<span class="pl-s"><span class="pl-pds">"</span>mocha<span class="pl-pds">"</span></span>,
             <span class="pl-s"><span class="pl-pds">"</span>license<span class="pl-pds">"</span></span>:<span class="pl-s"><span class="pl-pds">"</span>WTF<span class="pl-pds">"</span></span>,
-            <span class="pl-s"><span class="pl-pds">"</span>blah<span class="pl-pds">"</span></span>:<span class="pl-c1">true</span>
+            <span class="pl-s"><span class="pl-pds">"</span>travis<span class="pl-pds">"</span></span>:{<span class="pl-s"><span class="pl-pds">"</span>versions<span class="pl-pds">"</span></span>:[<span class="pl-s"><span class="pl-pds">"</span>0.12<span class="pl-pds">"</span></span>,<span class="pl-s"><span class="pl-pds">"</span>0.11<span class="pl-pds">"</span></span>,<span class="pl-s"><span class="pl-pds">"</span>0.10<span class="pl-pds">"</span></span>,<span class="pl-s"><span class="pl-pds">"</span>0.6<span class="pl-pds">"</span></span>,<span class="pl-s"><span class="pl-pds">"</span>0.8<span class="pl-pds">"</span></span>,<span class="pl-s"><span class="pl-pds">"</span>iojs<span class="pl-pds">"</span></span>,<span class="pl-s"><span class="pl-pds">"</span>iojs-v1.0.4<span class="pl-pds">"</span></span>]}
         }
     }
 }</pre></div>
+
+<h2>
+<a id="todo" class="anchor" href="#todo" aria-hidden="true"><span class="octicon octicon-link"></span></a>Todo</h2>
+
+<ol>
+<li>add appveyor support</li>
+<li>add linter support</li>
+</ol>
 
 <h2>
 <a id="how-to-contribute" class="anchor" href="#how-to-contribute" aria-hidden="true"><span class="octicon octicon-link"></span></a>How to contribute</h2>
