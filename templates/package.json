@@ -28,7 +28,7 @@
 <% } %>
 <% if(node.bugs){ %>
   "bugs": {
-    "url": "https://github.com/<%= node.author %>/<%= projectName %>"
+    "url": "https://github.com/<%= node.author %>/<%= projectName %>/issues"
   }
 <% } %>
 }
