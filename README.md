@@ -1,6 +1,30 @@
 # project-bin-node
 bin helper to initialize a node project.
 
+### lambda node application
+- README.md
+- package.json
+- .gitignore
+- npm i [preferred npm dependencies] --save
+- npm i [preferred npm dev-dependencies] --save-dev
+- .travis.yml
+- git commit -m 'Init repo'
+
+### electron iojs application
+- README.md
+- package.json for electron app.
+- .gitignore
+- .bowerrc
+- app.js, an electron app kick-starter.
+- bin.js, an electron bin kick-starter.
+- /static/, an electron front app kick-starter.
+- npm i [preferred default dependencies] --save
+- npm i [preferred default dev-dependencies] --save-dev
+- bower i [preferred bower dependencies] --save (jquery)
+- .travis.yml
+- git commit -m 'Init repo'
+
+
 ## Installation
 Run the following commands to download and install the application:
 
