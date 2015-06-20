@@ -234,7 +234,7 @@ new Config().load().get('local').forEach(function(machine){
     })
 
     .then(function(next, nLine){
-      var tplFile = machine.profileData.node.readmeTplFile||'templates/.gitignore';
+      var tplFile = machine.profileData.node.readmeTplFile||'templates/gitignore.ejs';
       tplFile = path.resolve(__dirname, tplFile);
       var destPath = '<%= wdPath %>.gitignore';
       var extraData = _.extend({projectName:projectName}, machine.profileData);
