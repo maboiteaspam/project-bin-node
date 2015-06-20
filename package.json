@@ -1,6 +1,6 @@
 {
   "name": "project-bin-node",
-  "version": "1.0.17",
+  "version": "1.0.18",
   "description": "bin helper to initialize a node project.",
   "main": "index.js",
   "scripts": {
