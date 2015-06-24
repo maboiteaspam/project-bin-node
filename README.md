@@ -83,8 +83,9 @@ Create a new file ```.local.json``` and adjust this content.
 
 ## Todo
 
+1. add editorconfig support (!!)
+2. add linter support (!)
 1. add appveyor support
-2. add linter support
 
 
 ## How to contribute
