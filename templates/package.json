@@ -1,10 +1,10 @@
 {
-  "name": "<%= projectName %>",
-  "version": "<%= node.version %>",
+  "name": "<%= global.projectName %>",
+  "version": "<%= global.projectVersion %>",
   "description": "to write",
-  "main": "<%= node.entry %>",
+  "main": "<%= global.node_pkg.entry %>",
   "scripts": {
-<% if(node.mocha){ %>
+<% if(global.node_pkg.mocha){ %>
     "test": "mocha"
 <% } %>
   },
@@ -14,21 +14,21 @@
     "be",
     "done"
   ],
-  "author": "<%= node.author %>",
-<% if(node.license){ %>
-  "license": "<%= node.license %>",
+  "author": "<%= global.author %>"
+<% if(global.license){ %>
+,"license": "<%= global.license %>"
 <% } %>
-<% if(node.homepage){ %>
-  "homepage": "<%= node.homepage %>",
+<% if(global.homepage){ %>
+,"homepage": "<%= global.homepage %>"
 <% } %>
-<% if(node.repository){ %>
-  "repository": {
-    "url": "https://github.com/<%= node.author %>/<%= projectName %>"
-  },
+<% if(global.repository){ %>
+,"repository": {
+    "url": "https://github.com/<%= global.author %>/<%= global.projectName %>"
+  }
 <% } %>
-<% if(node.bugs){ %>
-  "bugs": {
-    "url": "https://github.com/<%= node.author %>/<%= projectName %>/issues"
+<% if(global.bugs){ %>
+,"bugs": {
+    "url": "https://github.com/<%= global.author %>/<%= global.projectName %>/issues"
   }
 <% } %>
 }
