@@ -11,6 +11,7 @@ Run the following commands to download and install the application:
 $ npm i project-bin-node -g
 ```
 
+In best effort possible, this module should be compatible windows.
 
 ## Usage
 
