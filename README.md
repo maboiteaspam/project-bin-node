@@ -1,7 +1,7 @@
 # project-bin-node
 bin helper to initialize a node project.
 
-Built on top of `grunt`, __configurable__, __modular__, __made to be hacked__.
+Built on top of `grunt`, __configurable__, __modular__.
 
 
 ## Installation
