@@ -162,12 +162,14 @@ require('grunt2bin')({
     // -------------------------- bin
     Tasks(grunt
     ).generateFile('bin',
-      templatePath + '/binary/bin/nameit.js', '' + bin
+      templatePath + '/binary/bin/nameit.js', './bin/'+bin+'.js'
     ).skipLastTask(!bin
     ).mergeJSONFile('bin_script', 'package.json', function () {
-        var bin = {}
-        bin[bin] = './bin/'+bin+'.js'
-        return bin;
+        var binOpts = {
+          'bin': {}
+        }
+        binOpts.bin[bin] = './bin/'+bin+'.js'
+        return binOpts;
       }
     ).skipLastTask(!bin
     ).packToTask('bin_setup', programTasks);
@@ -234,7 +236,7 @@ require('grunt2bin')({
 
 
     // -------------------------- clean up
-    var vcs = Tasks(grunt
+    Tasks(grunt
     ).jsonFormat('node_pkg_format', 'package.json'
     ).jsonFormat('bower_pkg_format', 'bower.json'
     ).packToTask('vcs', programTasks);

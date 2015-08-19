@@ -14,7 +14,11 @@ module.exports = function(grunt) {
       var c = JSON.parse(fs.readFileSync(file));
       if (_.isFunction(data)) data = data(c)
       grunt.util._.merge(c, data);
-      fs.writeFileSync(file, JSON.stringify(data, null, 2))
+      fs.writeFileSync(file, JSON.stringify(c, null, 2))
+      grunt.log.ok('File ' + file + ' is up to date !')
+    } else {
+      grunt.log.warn('This file does not exists ' + file + ', skipped!')
+
     }
   });
 
