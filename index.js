@@ -1,13 +1,11 @@
 #!/usr/bin/env node
 
-var Config = require('project-bin-config');
-var Cluc = require('cluc');
 var cliargs = require('cliargs');
 var path = require('path');
-var fs = require('fs');
 var _ = require('underscore');
 var pkg = require('./package.json');
-var glob = require('glob');
+var Tasks = require('./lib/tasks-helper.js')
+var osenv = require('osenv')
 
 var argsObj = cliargs.parse();
 
@@ -37,266 +35,177 @@ if(argsObj.version){
 
 var wdPath = argsObj.path || argsObj.p || process.cwd();
 wdPath = path.resolve(wdPath)+'/';
+
 var noCommit = 'nocommit' in argsObj || 'n' in argsObj;
-var projectName = path.basename(wdPath);
-var gitAddfiles = [];
+var noPush = 'nopush' in argsObj;
 var layout = argsObj.layout || argsObj.l || 'lambda';
-console.log(noCommit)
+var bin = argsObj.bin || argsObj.b || false;
 
-new Config().load().get('local').forEach(function(machine){
-
-  _.defaults(machine.profileData,{node:{}});
-  _.defaults(machine.profileData.node,{
-    projectName:projectName,
-    author:null,
-    layouts:{
-      lambda:{
-        path:'templates/lambda/',
-        main:'index.js'
-      }
-    },
-    license:'',
-    version:'0.0.1',
-    packages:null,
-    devPackages:null,
-    entry:'index.js',
-    repository:'https://github.com/<%=node.author%>/<%=projectName %>',
-    test:null
-  });
-
-  _.defaults(machine.profileData,{bower:{}});
-  _.defaults(machine.profileData.bower,{
-    projectName:projectName,
-    author:machine.profileData.node.author,
-    license:'',
-    version:machine.profileData.node.version || '0.0.1',
-    "ignore": [
-      "**/.*",
-      "node_modules",
-      "bower_components",
-      "static/app/components/",
-      "test",
-      "tests"
-    ]
-  });
+if (argsObj.path || argsObj.p) {
+  process.chdir(wdPath);
+}
 
 
-  var line = new Cluc();
-  line
-    .title('Generating a new project')
-    .then(function(next){
-      if(!machine.profileData.node.author){
-        throw 'profileData.node.author is missing';
-      }
-      if(!machine.profileData.node.repository){
-        throw 'profileData.node.repository is missing';
-      }
-      this.saveValue('wdPath', wdPath);
-      this.saveValue('projectName', projectName);
-      this.saveValue('projectVersion', machine.profileData.node.version);
-      this.saveValue('test', machine.profileData.node.test);
-      next();
-    }).stream('cd <%= wdPath %>', function(){
-      this.display();
-    }).stream('git init', function(){
-      this.display();
-    })
-
-    .subtitle('Package JSON')
-    .stream('touch package.json', function(){
-      this.display();
-      gitAddfiles.push('<%= wdPath %>package.json');
-    }).then(function(next, nLine){
-      var tplFile = machine.profileData.node.packageTplFile||'templates/package.json';
-      tplFile = path.resolve(__dirname, tplFile);
-      var destPath = '<%= wdPath %>package.json';
-      var extraData = _.extend({projectName:projectName}, machine.profileData);
-      nLine.generateTemplate(tplFile, destPath, extraData, function(){
-          this.display();
-        });
-      next();
-    })
-
-    .when(machine.profileData.node.packages, function(line){
-      var p = machine.profileData.node.packages;
-      line
-        .subtitle('Installing default packages')
-        .stream('npm i '+p+' --save', function(){
-          this.display();
-          this.spin();
-        });
-    }).when(machine.profileData.node.devPackages, function(line){
-      var p = machine.profileData.node.devPackages;
-      line
-        .subtitle('Installing default dev-packages')
-        .stream('npm i '+p+' --save-dev', function(){
-          this.display();
-          this.spin();
-        });
-    })
-
-    .when(layout==='lambda', function (line) {
-      var tplDir = machine.profileData.node.layouts[layout].path|| machine.profileData.node.layouts.lambda.path;
-      var extraData = _.extend({projectName:projectName}, machine.profileData);
-      line.subtitle('lambda app')
-        .stream('touch index.js', function(){
-          this.display();
-          gitAddfiles.push('<%= wdPath %>index.js');
-        }).then(function(next, nLine){
-          nLine.generateTemplateDir(tplDir, '<%=wdPath%>', extraData, function(){
-              this.display();
-            }).then(function(next_){
-            var options = {
-              cwd: tplDir,
-              dot: true,
-              nodir: true
-            };
-            glob( '**', options, function (er, files) {
-              files.forEach(function(f){
-                gitAddfiles.push('<%= wdPath %>/' + f);
-              });
-              next_();
-            });
-          });
-          next();
-        });
-    })
-
-    .when(layout==='electron', function (line) {
-      var tplDir = path.join(__dirname, 'templates/electron/');
-      if(machine.profileData.node.layouts[layout]){
-        if(machine.profileData.node.layouts[layout].path){
-          tplDir = machine.profileData.node.layouts[layout].path;
+require('grunt2bin')({
+  // -
+  config: function(grunt, cwd){
+    grunt.loadNpmTasks('grunt-template')
+    grunt.loadTasks('tasks')
+    // -
+    grunt.initConfig({
+      'global': {
+        'default_author' : '',
+        'author' : '',
+        'repository' : '',
+        //'vcs' : 'git',
+        'ci' : 'travis',
+        'projectVersion' : '0.0.1',
+        'projectName' : path.basename(wdPath),
+        'init_message' : 'init <% global.projectName %> project',
+        'description' : '',
+        'keywords' : '',
+        'node_pkg': {
+          'entry': 'main.js',
+          'packages':[],
+          'devPackages':[]
+        },
+        'bower': {
+          'ignore': []
+        },
+        'travis': {
+          'versions': [process.version]
+        }
+      },
+      'run': {
+        'cwd': cwd,
+        'vcs' : {
+          'add': []
         }
       }
-      var extraData = _.extend({projectName:projectName}, machine.profileData);
-      line.subtitle('electron app')
-        .generateTemplateDir(tplDir, '<%=wdPath%>', extraData, function(){
-          this.display();
-        }).then(function(next){
-          var options = {
-            cwd: tplDir,
-            dot: true,
-            nodir: true
-          };
-          glob( '**', options, function (er, files) {
-            files.forEach(function(f){
-              gitAddfiles.push('<%= wdPath %>/' + f);
-            });
-            next();
-          });
-        }).stream('npm i electron-prebuilt electron-packager --save-dev', function(){
-          this.display();
-          this.spin();
-        }).stream('npm i titlebar --save', function(){
-          this.display();
-          this.spin();
-        }).stream('bower i jquery --save', function(){
-          this.display();
-          this.spin();
-        }).then(function(next){
-          var projectPkg = fs.readFileSync(wdPath+'/package.json', 'utf8');
-          projectPkg = JSON.parse(projectPkg);
-          projectPkg.scripts = projectPkg.scripts || {};
-          var electronMain = 'app.js';
-          if(projectPkg.main
-            && projectPkg.main!==electronMain){
-            projectPkg.mainOld = projectPkg.main;
-          }
-          projectPkg.main = electronMain
-          var electronStart = 'node bin.js';
-          if(projectPkg.scripts.start
-            && projectPkg.scripts.start!==electronStart){
-              projectPkg.scripts.startOld = projectPkg.scripts.start;
-          }
-          projectPkg.scripts.start = electronStart;
-          projectPkg.bin = projectPkg.bin || {};
-          projectPkg.bin[projectName] = './bin.js';
-          fs.writeFileSync(wdPath+'/package.json', JSON.stringify(projectPkg, null, 4), 'utf-8')
-          next();
-        });
     })
+    grunt.setUserGruntfile('project-init.js')
+  },
+  // -
+  run: function(grunt, cwd){
 
-    .then(function(next, nLine){
-      var tplFile = machine.profileData.node.readmeTplFile||'templates/README.md';
-      tplFile = path.resolve(__dirname, tplFile);
-      var destPath = '<%= wdPath %>README.md';
-      var extraData = _.extend({projectName:projectName}, machine.profileData);
-      nLine.subtitle('README')
-        .stream('touch README.md', function(){
-          this.display();
-          gitAddfiles.push('<%= wdPath %>README.md');
-        })
-        .generateTemplate(tplFile, destPath, extraData, function(){
-          this.display();
-        });
-      next();
-    })
+    var programTasks = []
 
-    .then(function(next, nLine){
-      var tplFile = machine.profileData.node.readmeTplFile||'templates/gitignore.ejs';
-      tplFile = path.resolve(__dirname, tplFile);
-      var destPath = '<%= wdPath %>.gitignore';
-      var extraData = _.extend({projectName:projectName}, machine.profileData);
-      nLine.subtitle('.gitignore')
-        .stream('touch .gitignore', function(){
-          this.display();
-          gitAddfiles.push('<%= wdPath %>.gitignore');
-        })
-        .generateTemplate(tplFile, destPath, extraData, function(){
-          this.display();
-        })
-        .when(layout==='electron', function(line){
-          line.ensureFileContains('<%= wdPath %>.gitignore', '\nstatic/app/components/');
-        });
-      next();
-    })
+    // -
+    Tasks(grunt
+    ).getGitConfig('get_git_config',
+      'user.name', 'global.default_author', true
+    ).ensureValues('git_config',[
+        {var:'global.author', default:'<%=global.default_author%>'},
+        {var:'global.repository', default:'http://github.com/<%=global.author%>/<%=global.projectName%>'}
+      ]
+    ).gitGlobalExcludesFile('git_proper_config', {
+        path: osenv.home() + '/.gitignore',
+        required: true
+      }
+    ).ensureGitExcludes('git_proper_global_excludes',
+      ['.local.json', '.idea'], true
+    ).packToTask('proper_config', programTasks);
 
-    .when(machine.profileData.node.travis, function(line){
-      line.subtitle('Generate travis file')
-        .then(function(next, nLine){
-          var tplFile = machine.profileData.node.travis.travisTplFile||'templates/.travis.yml';
-          tplFile = path.resolve(__dirname, tplFile);
-          gitAddfiles.push('<%= wdPath %>.travis.yml');
-          var destPath = '<%= wdPath %>.travis.yml';
-          var extraData = _.extend({projectName:projectName}, machine.profileData);
-          nLine.generateTemplate(tplFile, destPath, extraData, function(){
-              this.display();
-            });
-          next();
-        });
-    })
+    // -
+    Tasks(grunt
+    ).multiLineInput('description', 'Please enter the module description', 'global.description'
+    ).multiLineInput('keywords', 'Please enter the module keywords', 'global.keywords',
+      function(v){return _.filter(v.split(/\s+/), function(y){return !!y.length})}
+    ).packToTask('describe', programTasks);
 
-    .when(machine.profileData.node.mocha, function(line){
-      line.subtitle('Generate test folder')
-        .mkdir('test', function(){
-          this.display();
-        }).writeFile('<%= wdPath %>test/index.js', '\n', function(){
-          this.display();
-          gitAddfiles.push('<%= wdPath %>test/index.js');
-        });
-    }).when(machine.profileData.node.mochaIndex, function(line){
-      line.putFile(machine.profileData.node.mochaIndex, '<%= wdPath %>test/index.js', function(){
-        this.display();
-      });
-    })
+    // -
+    Tasks(grunt
+    ).generateFile('node_pkg',
+      __dirname + '/templates/package.json',
+      'package.json'
+    ).generateFile('node_gitignore',
+      __dirname + '/templates/gitignore.ejs',
+      '.gitignore'
+    ).generateFile('node_readme',
+      __dirname + '/templates/README.md',
+      'README.md'
+    ).packToTask('pkg_init', programTasks);
 
-    .when(!noCommit, function(line){
-      line.then(function(next, nLine){
-        nLine.subtitle('Git commit')
-          .each(gitAddfiles, function(f, i, nLine){
-            nLine.stream('git add '+f, function(){
-              this.display();
-            })
-          }).stream('git commit -m "project-node init"', function(){
-            this.display();
-          });
-        next(nLine);
-      })
-    })
+    // -
+    var deps = Tasks(grunt);
+    if (grunt.config.get('global.node_pkg.packages')
+      && grunt.config.get('global.node_pkg.packages').length) {
+      deps.npmInstall('node_deps',
+        '<%=global.node_pkg.packages%>',
+        'save');
+    }
+    if (grunt.config.get('global.node_pkg.devPackages')
+      && grunt.config.get('global.node_pkg.devPackages').length) {
+      deps.npmInstall('node_devdeps',
+        '<%=global.node_pkg.devPackages%>',
+        'save-dev');
+    }
+    if (grunt.config.get('global.node_pkg.globalPackages')
+      && grunt.config.get('global.node_pkg.globalPackages').length) {
+      deps.npmInstall('node_globaldeps',
+        '<%=global.node_pkg.globalPackages%>',
+        'global');
+    }
+    deps.packToTask('deps_install', programTasks);
 
+    // -
+    if (bin) {
+      Tasks(grunt
+      ).generateFile('bin',
+        __dirname + '/templates/binary/bin/nameit.js',
+        bin
+      ).packToTask('bin_setup', programTasks);
+    }
 
+    // -
+    var layoutMaker = Tasks(grunt);
+    if (layout.match(/lambda/)) {
+      layoutMaker.generateDir('lambda',
+        __dirname + '/templates/lambda',
+        cwd
+      )
+    }
+    if (layout.match(/electron/)) {
+      layoutMaker.generateDir('electron',
+        __dirname + '/templates/electron',
+        cwd
+      )
+    }
+    if (layout.match(/grunt/)) {
+      layoutMaker.generateDir('grunt',
+        __dirname + '/templates/grunt',
+        cwd
+      )
+    }
+    if (layout.match(/bower/)) {
+      layoutMaker.generateDir('bower',
+        __dirname + '/templates/bower',
+        cwd
+      )
+    }
+    layoutMaker
+      .packToTask('layout_make', programTasks);
 
-    .subtitle('All done !')
-    .run(new Cluc.transports.process());
-});
+    // -
+    if (grunt.config.get('global.ci')==='travis') {
+      Tasks(grunt)
+        .generateFile('ci_travis',
+        __dirname + '/templates/.travis.yml',
+        '.travis.yml'
+      ).packToTask('ci', programTasks);
+    }
+
+    // -
+    if (grunt.config.get('global.vcs')==='git') {
+      var vcs = Tasks(grunt)
+        .gitInit('vcs_init')
+        .gitAdd('vcs_add', '<%=run.vcs.add %>');
+      if (!noCommit) vcs.gitCommit('vcs_commit', '<%=global.vcs.init_message%>')
+      if (!noPush) vcs.gitPush('vcs_push')
+      vcs.packToTask('vcs', programTasks);
+    }
+
+    // -
+    grunt.registerTask('default', programTasks)
+  }
+})
