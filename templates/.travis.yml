@@ -1,7 +1,7 @@
 language: nodejs
 node_js:
-  - <%= (node.travis.versions||[]).join('\n  - ') %>
-install:<% if(node.mocha){ %>
+  - <%= (global.travis.versions||[]).join('\n  - ') %>
+install:<% if(global.node_pkg.mocha){ %>
   - npm i mocha -g
 <% } %>
   - npm i

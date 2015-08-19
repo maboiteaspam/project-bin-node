@@ -9,11 +9,7 @@
 <% } %>
   },
   "bin": {},
-  "keywords": [
-    "To",
-    "be",
-    "done"
-  ],
+  "keywords": <%= JSON.stringify(global.keywords.split(/\S/)) %>,
   "author": "<%= global.author %>"
 <% if(global.license){ %>
 ,"license": "<%= global.license %>"
