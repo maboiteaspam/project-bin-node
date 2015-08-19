@@ -151,6 +151,7 @@ More to explain. Maybe this will be up to date by the time you got there https:/
 3. make more tests
 4. think about per system user configuration
 5. think about workflow editor
+5. split tasks and TaskHelper into sub modules
 
 
 ## How to contribute
