@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+// bin <%= global.projectName %> by <%= global.author %>
+
 var electron = require('electron-prebuilt')
 var proc = require('child_process')
 

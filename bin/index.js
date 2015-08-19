@@ -117,11 +117,14 @@ require('grunt2bin')({
 
     // -------------------------- package purpose
     Tasks(grunt
+
     ).multiLineInput('description', 'Please enter the module description', 'global.description'
     ).skipLastTask(!!grunt.config.get('global.description').length
+
     ).multiLineInput('keywords', 'Please enter the module keywords', 'global.keywords',
       function(v){return _.filter(v.split(/\s+/), function(y){return !!y.length})}
     ).skipLastTask(!!grunt.config.get('global.keywords').length
+
     ).packToTask('describe', programTasks);
 
 
@@ -228,6 +231,13 @@ require('grunt2bin')({
     ).skipLastTask(!grunt.config.get('global.ci').match(/appveyor/)
 
     ).packToTask('ci', programTasks);
+
+
+    // -------------------------- clean up
+    var vcs = Tasks(grunt
+    ).jsonFormat('node_pkg_format', 'package.json'
+    ).jsonFormat('bower_pkg_format', 'bower.json'
+    ).packToTask('vcs', programTasks);
 
 
     // -------------------------- vcs

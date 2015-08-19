@@ -1,5 +1,7 @@
 #!/usr/bin/env electron
 
+// app <%= global.projectName %> by <%= global.author %>
+
 var pkg = require('./package.json')
 var app = require('app')
 var BrowserWindow = require('browser-window')
