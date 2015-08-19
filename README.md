@@ -84,7 +84,7 @@ This section describes the process implemented to reach a module setup.
     Only when `-b|--bin` option is provided. 
     Re-configures the `package.json` file and create new bin files structure given their template.
 - __layout_make__
-    Only when `-b|--bin` option is provided. 
+    Only when `-l|--layout` option is provided. 
     Re-configures the `package.json` file and create new bin files structure given their template.
 - __linter__
     Given `global.linter` option in `grunt` config, re-configures `package.json` 
