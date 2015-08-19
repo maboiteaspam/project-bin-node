@@ -3,8 +3,8 @@
 var cliargs = require('cliargs');
 var path = require('path');
 var _ = require('underscore');
-var pkg = require('./package.json');
-var Tasks = require('./lib/tasks-helper.js')
+var pkg = require('../package.json');
+var Tasks = require('../lib/tasks-helper.js')
 var osenv = require('osenv')
 
 var argsObj = cliargs.parse();
@@ -18,12 +18,16 @@ if(argsObj.help || argsObj.h){
   console.log(' %s [-p|--path <path>]', pkg.name);
   console.log(' %s --version', pkg.name);
   console.log(' %s --h|--help', pkg.name);
-  console.log(' %s -nocommit', pkg.name);
+  console.log(' %s --nocommit', pkg.name);
+  console.log(' %s --nopush', pkg.name);
+  console.log(' %s --novcs', pkg.name);
   console.log('');
   console.log('%s', 'Options');
   console.log(' -p|--path <path>\t Path to initialize');
   console.log(' -l|--layout <layout>\t App layout to use lamba|electron');
-  console.log(' -n|-nocommit \t Do not commit after update');
+  console.log(' -n|--nocommit \t Do not commit or added files');
+  console.log(' --nopush \t Do not push after commit');
+  console.log(' --novcs \t Do not apply any vcs');
   console.log('');
   process.exit(1 /* ? is correct ? */);
 }
@@ -38,8 +42,10 @@ wdPath = path.resolve(wdPath)+'/';
 
 var noCommit = 'nocommit' in argsObj || 'n' in argsObj;
 var noPush = 'nopush' in argsObj;
+var noVCS = 'novcs' in argsObj;
 var layout = argsObj.layout || argsObj.l || 'lambda';
 var bin = argsObj.bin || argsObj.b || false;
+var templatePath = __dirname + '/../templates';
 
 if (argsObj.path || argsObj.p) {
   process.chdir(wdPath);
@@ -57,8 +63,9 @@ require('grunt2bin')({
         'default_author' : '',
         'author' : '',
         'repository' : '',
-        //'vcs' : 'git',
+        'vcs' : 'git',
         'ci' : 'travis',
+        'linter' : 'eslint',
         'projectVersion' : '0.0.1',
         'projectName' : path.basename(wdPath),
         'init_message' : 'init <% global.projectName %> project',
@@ -83,6 +90,7 @@ require('grunt2bin')({
         }
       }
     })
+    // -
     grunt.setUserGruntfile('project-init.js')
   },
   // -
@@ -90,7 +98,7 @@ require('grunt2bin')({
 
     var programTasks = []
 
-    // -
+    // -------------------------- proper config.
     Tasks(grunt
     ).getGitConfig('get_git_config',
       'user.name', 'global.default_author', true
@@ -106,106 +114,145 @@ require('grunt2bin')({
       ['.local.json', '.idea'], true
     ).packToTask('proper_config', programTasks);
 
-    // -
+
+    // -------------------------- package purpose
     Tasks(grunt
     ).multiLineInput('description', 'Please enter the module description', 'global.description'
+    ).skipLastTask(!!grunt.config.get('global.description').length
     ).multiLineInput('keywords', 'Please enter the module keywords', 'global.keywords',
       function(v){return _.filter(v.split(/\s+/), function(y){return !!y.length})}
+    ).skipLastTask(!!grunt.config.get('global.keywords').length
     ).packToTask('describe', programTasks);
 
-    // -
+
+    // -------------------------- package common
     Tasks(grunt
     ).generateFile('node_pkg',
-      __dirname + '/templates/package.json',
-      'package.json'
+      templatePath + '/package.json', 'package.json'
     ).generateFile('node_gitignore',
-      __dirname + '/templates/gitignore.ejs',
-      '.gitignore'
+      templatePath + '/gitignore.ejs', '.gitignore'
     ).generateFile('node_readme',
-      __dirname + '/templates/README.md',
-      'README.md'
+      templatePath + '/README.md', 'README.md'
     ).packToTask('pkg_init', programTasks);
 
-    // -
+
+    // -------------------------- dependencies setup
     var deps = Tasks(grunt);
     if (grunt.config.get('global.node_pkg.packages')
       && grunt.config.get('global.node_pkg.packages').length) {
       deps.npmInstall('node_deps',
-        '<%=global.node_pkg.packages%>',
-        'save');
+        '<%=global.node_pkg.packages%>', 'save');
     }
     if (grunt.config.get('global.node_pkg.devPackages')
       && grunt.config.get('global.node_pkg.devPackages').length) {
       deps.npmInstall('node_devdeps',
-        '<%=global.node_pkg.devPackages%>',
-        'save-dev');
+        '<%=global.node_pkg.devPackages%>', 'save-dev');
     }
     if (grunt.config.get('global.node_pkg.globalPackages')
       && grunt.config.get('global.node_pkg.globalPackages').length) {
       deps.npmInstall('node_globaldeps',
-        '<%=global.node_pkg.globalPackages%>',
-        'global');
+        '<%=global.node_pkg.globalPackages%>', 'global');
     }
-    deps.packToTask('deps_install', programTasks);
+    deps.packToTask('deps_configure', programTasks);
 
-    // -
-    if (bin) {
-      Tasks(grunt
-      ).generateFile('bin',
-        __dirname + '/templates/binary/bin/nameit.js',
-        bin
-      ).packToTask('bin_setup', programTasks);
+
+    // -------------------------- bin
+    Tasks(grunt
+    ).generateFile('bin',
+      templatePath + '/binary/bin/nameit.js', '' + bin
+    ).skipLastTask(!bin
+    ).mergeJSONFile('bin_script', 'package.json', function () {
+        var bin = {}
+        bin[bin] = './bin/'+bin+'.js'
+        return bin;
+      }
+    ).skipLastTask(!bin
+    ).packToTask('bin_setup', programTasks);
+
+
+    // -------------------------- layout
+    Tasks(grunt
+    ).generateDir('layout_lambda',
+      templatePath + '/lambda', cwd
+    ).skipLastTask(!layout.match(/lambda/g)
+
+    ).generateDir('layout_electron',
+      templatePath + '/electron', cwd
+    ).skipLastTask(!layout.match(/electron/g)
+
+    ).generateDir('layout_grunt',
+      templatePath + '/grunt', cwd
+    ).skipLastTask(!layout.match(/grunt/g)
+
+    ).generateDir('layout_bower',
+      templatePath + '/bower', cwd
+    ).skipLastTask(!layout.match(/bower/g)
+
+    ).packToTask('layout_make', programTasks);
+
+
+    // -------------------------- linter
+    Tasks(grunt
+    ).spawnProcess('linter_es',
+      'eslint --init', {stdinRawMode: true}
+    ).skipLastTask(!grunt.config.get('global.linter').match(/eslint/)
+    ).mergeJSONFile('es_linter_script', 'package.json', {scripts:{'lint':'eslint'}}
+    ).skipLastTask(!grunt.config.get('global.linter').match(/eslint/)
+
+    ).generateFile('linter_jsh',
+      templatePath + '/.jshintrc.tpl', '.jshintrc'
+    ).skipLastTask(!grunt.config.get('global.linter').match(/jshint/)
+    ).mergeJSONFile('jsh_linter_script', 'package.json', {scripts:{'lint':'jshint'}}
+    ).skipLastTask(!grunt.config.get('global.linter').match(/jshint/)
+
+    ).generateFile('linter_jsl',
+      templatePath + '/.jslintrc.tpl', '.jslintrc'
+    ).skipLastTask(!grunt.config.get('global.linter').match(/jslint/)
+    ).mergeJSONFile('jsl_linter_script', 'package.json', {scripts:{'lint':'jslint'}}
+    ).skipLastTask(!grunt.config.get('global.linter').match(/jshint/)
+
+    ).mergeJSONFile('std_linter_script', 'package.json', {scripts:{'lint':'standard'}}
+    ).skipLastTask(!grunt.config.get('global.linter').match(/standard/)
+
+    ).packToTask('linter', programTasks);
+
+
+    // -------------------------- ci
+    Tasks(grunt
+    ).generateFile('ci_travis',
+      templatePath + '/.travis.yml', '.travis.yml'
+    ).skipLastTask(!grunt.config.get('global.ci').match(/travis/)
+
+    ).generateFile('ci_appveyor',
+      templatePath + '/.appveyor.yml', '.appveyor.yml'
+    ).skipLastTask(!grunt.config.get('global.ci').match(/appveyor/)
+
+    ).packToTask('ci', programTasks);
+
+
+    // -------------------------- vcs
+    if (grunt.config.get('global.vcs')==='gits') {
+      var vcs = Tasks(grunt
+      ).gitInit('vcs_init'
+      ).gitAdd('vcs_add', '<%=run.vcs.add %>'
+      ).gitCommit('vcs_commit', '<%=global.vcs.init_message%>'
+      ).skipLastTask(!!noCommit
+      ).gitPush('vcs_push'
+      ).skipLastTask(!!noPush
+      ).skipAll(!!noVCS
+      ).packToTask('vcs', programTasks);
     }
 
-    // -
-    var layoutMaker = Tasks(grunt);
-    if (layout.match(/lambda/)) {
-      layoutMaker.generateDir('lambda',
-        __dirname + '/templates/lambda',
-        cwd
-      )
-    }
-    if (layout.match(/electron/)) {
-      layoutMaker.generateDir('electron',
-        __dirname + '/templates/electron',
-        cwd
-      )
-    }
-    if (layout.match(/grunt/)) {
-      layoutMaker.generateDir('grunt',
-        __dirname + '/templates/grunt',
-        cwd
-      )
-    }
-    if (layout.match(/bower/)) {
-      layoutMaker.generateDir('bower',
-        __dirname + '/templates/bower',
-        cwd
-      )
-    }
-    layoutMaker
-      .packToTask('layout_make', programTasks);
 
-    // -
-    if (grunt.config.get('global.ci')==='travis') {
-      Tasks(grunt)
-        .generateFile('ci_travis',
-        __dirname + '/templates/.travis.yml',
-        '.travis.yml'
-      ).packToTask('ci', programTasks);
-    }
+    // -------------------------- dependencies installation
+    Tasks(grunt
+    ).spawnProcess('npm_install',
+      'npm i'
+    ).spawnProcess('bower_install',
+      'bower i'
+    ).packToTask('deps_install', programTasks);
 
-    // -
-    if (grunt.config.get('global.vcs')==='git') {
-      var vcs = Tasks(grunt)
-        .gitInit('vcs_init')
-        .gitAdd('vcs_add', '<%=run.vcs.add %>');
-      if (!noCommit) vcs.gitCommit('vcs_commit', '<%=global.vcs.init_message%>')
-      if (!noPush) vcs.gitPush('vcs_push')
-      vcs.packToTask('vcs', programTasks);
-    }
-
-    // -
+    // that s it.
     grunt.registerTask('default', programTasks)
   }
 })
