@@ -143,18 +143,15 @@ require('grunt2bin')({
     var deps = Tasks(grunt);
     if (grunt.config.get('global.node_pkg.packages')
       && grunt.config.get('global.node_pkg.packages').length) {
-      deps.npmInstall('node_deps',
-        '<%=global.node_pkg.packages%>', 'save');
+      deps.mergeJSONFile('deps_pkg_save', 'package.json', {dependencies:
+        grunt.config.get('global.node_pkg.packages')
+      });
     }
     if (grunt.config.get('global.node_pkg.devPackages')
       && grunt.config.get('global.node_pkg.devPackages').length) {
-      deps.npmInstall('node_devdeps',
-        '<%=global.node_pkg.devPackages%>', 'save-dev');
-    }
-    if (grunt.config.get('global.node_pkg.globalPackages')
-      && grunt.config.get('global.node_pkg.globalPackages').length) {
-      deps.npmInstall('node_globaldeps',
-        '<%=global.node_pkg.globalPackages%>', 'global');
+      deps.mergeJSONFile('deps_pkg_save', 'package.json', {devDependencies:
+        grunt.config.get('global.node_pkg.packages')
+      });
     }
     deps.packToTask('deps_configure', programTasks);
 
@@ -239,11 +236,11 @@ require('grunt2bin')({
     Tasks(grunt
     ).jsonFormat('node_pkg_format', 'package.json'
     ).jsonFormat('bower_pkg_format', 'bower.json'
-    ).packToTask('vcs', programTasks);
+    ).packToTask('cleanup', programTasks);
 
 
     // -------------------------- vcs
-    if (grunt.config.get('global.vcs')==='gits') {
+    if (grunt.config.get('global.vcs')==='git') {
       var vcs = Tasks(grunt
       ).gitInit('vcs_init'
       ).gitAdd('vcs_add', '<%=run.vcs.add %>'
@@ -260,6 +257,9 @@ require('grunt2bin')({
     Tasks(grunt
     ).spawnProcess('npm_install',
       'npm i'
+    ).spawnProcess('npm_install',
+      'npm i ' + grunt.config.get('global.node_pkg.globalPackages').join(' ')+ ' -g'
+    ).skipLastTask(!!grunt.config.get('global.node_pkg.globalPackages').length
     ).spawnProcess('bower_install',
       'bower i'
     ).packToTask('deps_install', programTasks);

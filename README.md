@@ -1,28 +1,7 @@
 # project-bin-node
 bin helper to initialize a node project.
 
-### lambda node application
-- README.md
-- package.json
-- .gitignore
-- npm i [preferred npm dependencies] --save
-- npm i [preferred npm dev-dependencies] --save-dev
-- .travis.yml
-- git commit -m 'Init repo'
-
-### electron iojs application
-- README.md
-- package.json for electron app.
-- .gitignore
-- .bowerrc
-- app.js, an electron app kick-starter.
-- bin.js, an electron bin kick-starter.
-- /static/, an electron front app kick-starter.
-- npm i [preferred default dependencies] --save
-- npm i [preferred default dev-dependencies] --save-dev
-- bower i [preferred bower dependencies] --save (jquery)
-- .travis.yml
-- git commit -m 'Init repo'
+Built on top of `grunt`, __configurable__, __modular__, __made to be hacked__.
 
 
 ## Installation
@@ -32,60 +11,145 @@ Run the following commands to download and install the application:
 $ npm i project-bin-node -g
 ```
 
+
 ## Usage
 
-```
-    # Initialize a lambda node project.
+__project-node__ [options]
+
+Initialize a project about node, github, travis, appveyor, linters, npm and so on.
+
+    -l|--layout     lambda,grunt,bower,electron
+                    The layouts to be used for module files templates.
+    -p|--path       Path to the directory to initialize.
+    -b|--bin        A binary to add to the module.
+    --nocommmit     Do not commit the new repo.
+    --nopush        Do not push the new repo.
+    --novcs         Do not use any vcs at all.
+    
+    -v|--version    Version
+    --verbose       More verbose
+    --debug         Much more verbose
+
+
+__Initialize a node project__
+
     project-node
     project-node -l lambda
+    project-node --layout=grunt,bower
+    project-node -l electron,lambda
+
+
+__Specify a path__
+
+    project-node -p the/path/to/init
+    project-node --path=the/path/to/init
+
+
+__Just try out__
+
+    project-node --novcs
+    project-node --nocommit
+    project-node --nopush
+
+
+__Helps ect__
+
+    showusage project-bin-node
     
-    # Initialize an electron project.
-    project-node -l electron
-    
-    # Initialize a specific path.
-    project-node -p /some/path
-    
-    # Version
-    project-node -v
-    
-    # Help
     project-node -h
-```
+    project-node -v
+    project-node --verbose
+    project-node --debug
+
+
+## Initialization descriptions
+
+This section describes the process implemented to reach a module setup.
+
+### General setup
+
+- __proper_config__ 
+    At first, it ensure the grunt configuration holds some values for `author` and `repository` entries.
+    Then, check `git` system configuration in order to ensure a global `excludefiles` is set. 
+    Configures it to something like `$HOME/.gitignore` if it is not done yet.
+    finally ensure the global gitinore file contains some values like `.idea`.
+- __describe__
+    Aims to gather information about the module such the `description` and the `keywords`.
+    Module name is always guessed from the directory name of the `cwd`.
+- __pkg_init__
+    Creates `package.json`, `README.md` and `.gitignore` files given their templates.
+- __deps_configure__
+    Re-configures `package.json` to add a set of pre defined `dependencies` and `dev-dependencies`.
+- __bin_setup__
+    Only when `-b|--bin` option is provided. 
+    Re-configures the `package.json` file and create new bin files structure given their template.
+- __layout_make__
+    Only when `-b|--bin` option is provided. 
+    Re-configures the `package.json` file and create new bin files structure given their template.
+- __linter__
+    Given `global.linter` option in `grunt` config, re-configures `package.json` 
+    and initialize a default linter configuration given a template.
+- __ci__
+    Given `global.ci` option in `grunt` config, re-configures `package.json` 
+    and initialize a default `ci` configuration given a template.
+- __cleanup__
+    Clean up to re format `json` files.
+- __vcs__
+    Given `global.git` option in `grunt` config,
+    initialize a new repository and proceeds steps to put it online (add, commit, push).
+
+
+### Expected files layout
+
+##### lambda layout
+- README.md
+- package.json
+- .gitignore
+- linter.rc
+- ci.config
+- index.js
+
+##### electron layout
+- README.md
+- package.json
+- .gitignore
+- .bowerrc
+- linter.rc
+- ci.config
+- app.js, an electron app kick-starter.
+- bin.js, an electron bin kick-starter.
+- /static/, an electron front app kick-starter.
+
+##### grunt layout
+- README.md
+- package.json
+- .gitignore
+- linter.rc
+- ci.config
+- Gruntfile.js
+
+##### bower layout
+- README.md
+- package.json
+- .gitignore
+- linter.rc
+- ci.config
+- bower.json
+- .bowerrc
 
 ## Configuration
 
-On __Project Root__ directory or within your __User Home__ directory.
-
-Or both to override some settings.
-
-Create a new file ```.local.json``` and adjust this content.
-
-```json
-{
-	"profileData":{
-		"node":{
-			"author":"maboiteaspam",
-			"version":"0.0.1",
-			"entry":"index.js",
-			"repository":"https://github.com/<%=author%>/<%=projectName%>.git",
-			"bugs":"https://github.com/<%=author%>/<%=projectName%>/issues",
-			"homepage":"https://github.com/<%=author%>/<%=projectName%>#readme",
-            "packages":"fs-extra path-extra underscore commander",
-            "devPackages":"should super-agent",
-			"test":"mocha",
-			"license":"WTF",
-			"travis":{"versions":["0.12","0.11","0.10","0.6","0.8","iojs","iojs-v1.0.4"]}
-		}
-	}
-}
-```
+More to explain. Maybe this will be up to date by the time you got there https://github.com/maboiteaspam/grunt2bin
 
 
 ## Todo
 
-1. add editorconfig support (!!)
-2. add linter support (!)
-1. add appveyor support
+0. enjoy the module
+1. rewrite the README
+2. rewrite the tests
+3. make more tests
+4. think about per system user configuration
+5. think about workflow editor
 
 
 ## How to contribute
