@@ -74,7 +74,8 @@ require('grunt2bin')({
         'node_pkg': {
           'entry': 'main.js',
           'packages':[],
-          'devPackages':[]
+          'devPackages':[],
+          'globalPackages':[]
         },
         'bower': {
           'ignore': []
@@ -240,17 +241,16 @@ require('grunt2bin')({
 
 
     // -------------------------- vcs
-    if (grunt.config.get('global.vcs')==='git') {
-      var vcs = Tasks(grunt
-      ).gitInit('vcs_init'
-      ).gitAdd('vcs_add', '<%=run.vcs.add %>'
-      ).gitCommit('vcs_commit', '<%=global.vcs.init_message%>'
-      ).skipLastTask(!!noCommit
-      ).gitPush('vcs_push'
-      ).skipLastTask(!!noPush
-      ).skipAll(!!noVCS
-      ).packToTask('vcs', programTasks);
-    }
+    var vcs = Tasks(grunt
+    ).gitInit('vcs_init'
+    ).gitAdd('vcs_add', '<%=run.vcs.add %>'
+    ).gitCommit('vcs_commit', '<%=global.vcs.init_message%>'
+    ).skipLastTask(!!noCommit
+    ).gitPush('vcs_push'
+    ).skipLastTask(!!noPush
+    ).skipAll(grunt.config.get('global.vcs')!=='git'
+    ).skipAll(!!noVCS
+    ).packToTask('vcs', programTasks);
 
 
     // -------------------------- dependencies installation

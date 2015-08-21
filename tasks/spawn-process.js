@@ -9,7 +9,9 @@ module.exports = function(grunt) {
   grunt.registerMultiTask('spawn-process', 'Merge JSON file values', function() {
     var cb = this.async();
     var options = this.options({
-      failOnError: true
+      spawn: null,
+      failOnError: true,
+      saveTo: null
     });
     var cmd = this.data.command;
 
@@ -22,12 +24,20 @@ module.exports = function(grunt) {
     cmd = cParser(cmd);
     grunt.verbose.writeflags(cmd)
 
+    var spawnOpts = options.spawn
+    if (!spawnOpts) {
+      if (!options.spawn) spawnOpts = {stdio: 'inherit'}
+      else spawnOpts = {stdio: 'pipe'}
+    }
     var error;
-    spawn(cmd.prg, cmd.args, {stdio: 'inherit'})
+    spawn(cmd.prg, cmd.args, spawnOpts)
       .on('error', function (err) {
         error = err
       })
       .on('close', function () {
+        if (options.saveTo) {
+          grunt.config.set(options.saveTo, d);
+        }
         if (error && options.failOnError) {
           grunt.warn(error);
         }
