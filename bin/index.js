@@ -1,11 +1,17 @@
 #!/usr/bin/env node
 
+var util = require("util");
 var cliargs = require('cliargs');
 var path = require('path');
 var _ = require('underscore');
 var pkg = require('../package.json');
-var Tasks = require('../lib/tasks-helper.js')
 var osenv = require('osenv')
+
+var TasksWorkflow = require('../lib/tasks-workflow.js')
+var tasksFile = require('../lib/tasks-file-helper.js')
+var tasksTemplate = require('../lib/tasks-template-helper.js')
+var tasksGit = require('../lib/tasks-git-helper.js')
+var tasksUtils = require('../lib/tasks-utils-helper.js')
 
 var argsObj = cliargs.parse();
 
@@ -97,174 +103,237 @@ require('grunt2bin')({
   // -
   run: function(grunt, cwd){
 
-    var programTasks = []
+    var main = new TasksWorkflow()
 
     // -------------------------- proper config.
-    Tasks(grunt
-    ).getGitConfig('get_git_config',
-      'user.name', 'global.default_author', true
-    ).ensureValues('git_config',[
+    TasksWorkflow()
+      .appendTask( tasksGit.getGitConfig('get_git_config',
+        'user.name', 'global.default_author', true
+      ))
+      .appendTask( tasksUtils.ensureValues('git_config',[
         {var:'global.author', default:'<%=global.default_author%>'},
         {var:'global.repository', default:'http://github.com/<%=global.author%>/<%=global.projectName%>'}
-      ]
-    ).gitGlobalExcludesFile('git_proper_config', {
+      ]))
+      .appendTask( tasksGit.gitGlobalExcludesFile('git_proper_config', {
         path: osenv.home() + '/.gitignore',
         required: true
-      }
-    ).ensureGitExcludes('git_proper_global_excludes',
-      ['.local.json', '.idea'], true
-    ).packToTask('proper_config', programTasks);
+      }))
+      .appendTask( tasksGit.ensureGitExcludes('git_proper_global_excludes',
+        ['.local.json', '.idea'], true
+      ))
+      .packToTask('proper_config',
+      'At first, it ensure the grunt configuration holds some values for `author` and `repository` entries.' +
+      '\nThen, check `git` system configuration in order to ensure a global `excludefiles` is set.' +
+      '\nConfigures it to something like `$HOME/.gitignore` if it is not done yet.' +
+      '\nfinally ensure the global gitinore file contains some values like `.idea`.'
+    ).appendTo(main);
 
 
     // -------------------------- package purpose
-    Tasks(grunt
+    TasksWorkflow()
+      .appendTask( tasksUtils.multiLineInput('description',
+        'Please enter the module description',
+        'global.description'
+      )).skipLastTask(!!grunt.config.get('global.description').length)
 
-    ).multiLineInput('description', 'Please enter the module description', 'global.description'
-    ).skipLastTask(!!grunt.config.get('global.description').length
+      .appendTask( tasksUtils.multiLineInput('keywords',
+        'Please enter the module keywords',
+        'global.keywords',
+        function(v){return _.filter(v.split(/\s+/), function(y){return !!y.length})}
+      )).skipLastTask(!!grunt.config.get('global.keywords').length)
 
-    ).multiLineInput('keywords', 'Please enter the module keywords', 'global.keywords',
-      function(v){return _.filter(v.split(/\s+/), function(y){return !!y.length})}
-    ).skipLastTask(!!grunt.config.get('global.keywords').length
-
-    ).packToTask('describe', programTasks);
+      .packToTask('describe',
+      'Aims to gather information about the module such the `description` and the `keywords`.' +
+      '\nModule name is always guessed from the directory name of the `cwd`.'
+    ).appendTo(main);
 
 
     // -------------------------- package common
-    Tasks(grunt
-    ).generateFile('node_pkg',
-      templatePath + '/package.json', 'package.json'
-    ).generateFile('node_gitignore',
-      templatePath + '/gitignore.ejs', '.gitignore'
-    ).generateFile('node_readme',
-      templatePath + '/README.md', 'README.md'
-    ).packToTask('pkg_init', programTasks);
+    TasksWorkflow()
+      .appendTask( tasksTemplate.generateFile('node_pkg',
+        templatePath + '/package.json', 'package.json'
+      )).appendTask( tasksTemplate.generateFile('node_gitignore',
+        templatePath + '/gitignore.ejs', '.gitignore'
+      )).appendTask( tasksTemplate.generateFile('node_readme',
+        templatePath + '/README.md', 'README.md'
+      )).packToTask('pkg_init',
+      'Creates `package.json`, `README.md` and `.gitignore` files given their templates.'
+    ).appendTo(main);
 
 
     // -------------------------- dependencies setup
-    var deps = Tasks(grunt);
-    if (grunt.config.get('global.node_pkg.packages')
-      && grunt.config.get('global.node_pkg.packages').length) {
-      deps.mergeJSONFile('deps_pkg_save', 'package.json', {dependencies:
-        grunt.config.get('global.node_pkg.packages')
-      });
-    }
-    if (grunt.config.get('global.node_pkg.devPackages')
-      && grunt.config.get('global.node_pkg.devPackages').length) {
-      deps.mergeJSONFile('deps_pkg_save', 'package.json', {devDependencies:
-        grunt.config.get('global.node_pkg.packages')
-      });
-    }
-    deps.packToTask('deps_configure', programTasks);
+    var dPkgList = grunt.config.get('global.node_pkg.devPackages')
+    var pkgList = grunt.config.get('global.node_pkg.packages')
+    TasksWorkflow()
+      .appendTask( tasksFile.mergeJSONFile('deps_pkg_save', 'package.json',
+        {dependencies: pkgList}
+      )).skipLastTask(!pkgList || !pkgList.length)
+
+      .appendTask( tasksFile.mergeJSONFile('deps_dpkg_save', 'package.json',
+        {devDependencies: dPkgList}
+      )).skipLastTask(!dPkgList || !dPkgList.length)
+
+      .packToTask('deps_configure',
+      'Re-configures `package.json` to add a set of pre defined `dependencies` and `dev-dependencies`.'
+    ).appendTo(main);
 
 
     // -------------------------- bin
-    Tasks(grunt
-    ).generateFile('bin',
-      templatePath + '/binary/bin/nameit.js', './bin/'+bin+'.js'
-    ).skipLastTask(!bin
-    ).mergeJSONFile('bin_script', 'package.json', function () {
-        var binOpts = {
-          'bin': {}
-        }
-        binOpts.bin[bin] = './bin/'+bin+'.js'
-        return binOpts;
-      }
-    ).skipLastTask(!bin
-    ).packToTask('bin_setup', programTasks);
+    TasksWorkflow()
+      .appendTask( tasksTemplate.generateFile('bin',
+        templatePath + '/binary/bin/nameit.js', './bin/'+bin+'.js'
+      ))
+      .appendTask( tasksFile.mergeJSONFile('bin_script', 'package.json', function () {
+          var binOpts = {
+            'bin': {}
+          }
+          binOpts.bin[bin] = './bin/'+bin+'.js'
+          return binOpts;
+      }))
+      .skipAll(!bin)
+      .packToTask('bin_setup',
+      'Only when `-b|--bin` option is provided.' +
+      '\nRe-configures the `package.json` file and create new bin files structure given their template.'
+    ).appendTo(main);
 
 
     // -------------------------- layout
-    Tasks(grunt
-    ).generateDir('layout_lambda',
-      templatePath + '/lambda', cwd
-    ).skipLastTask(!layout.match(/lambda/g)
+    TasksWorkflow()
 
-    ).generateDir('layout_electron',
-      templatePath + '/electron', cwd
-    ).skipLastTask(!layout.match(/electron/g)
+      .appendTask( tasksTemplate.generateDir('layout_lambda',
+        templatePath + '/lambda', cwd
+      )).skipLastTask(!layout.match(/lambda/g))
 
-    ).generateDir('layout_grunt',
-      templatePath + '/grunt', cwd
-    ).skipLastTask(!layout.match(/grunt/g)
+      .appendTask( tasksTemplate.generateDir('layout_electron',
+        templatePath + '/electron', cwd
+      )).skipLastTask(!layout.match(/electron/g))
 
-    ).generateDir('layout_bower',
-      templatePath + '/bower', cwd
-    ).skipLastTask(!layout.match(/bower/g)
+      .appendTask( tasksTemplate.generateDir('layout_grunt',
+        templatePath + '/grunt', cwd
+      )).skipLastTask(!layout.match(/grunt/g))
 
-    ).packToTask('layout_make', programTasks);
+      .appendTask( tasksTemplate.generateDir('layout_bower',
+        templatePath + '/bower', cwd
+      )).skipLastTask(!layout.match(/bower/g))
+
+      .packToTask('layout_make',
+      'Only when `-l|--layout` option is provided.' +
+      '\nRe-configures the `package.json` file and create new bin files structure given their template.'
+    ).appendTo(main);
 
 
     // -------------------------- linter
-    Tasks(grunt
-    ).spawnProcess('linter_es',
-      'eslint --init', {stdinRawMode: true}
-    ).skipLastTask(!grunt.config.get('global.linter').match(/eslint/)
-    ).mergeJSONFile('es_linter_script', 'package.json', {scripts:{'lint':'eslint'}}
-    ).skipLastTask(!grunt.config.get('global.linter').match(/eslint/)
+    TasksWorkflow()
+      // -
+      .appendTask( tasksUtils.spawnProcess('linter_es',
+        'eslint --init', {stdinRawMode: true}
+      )).skipLastTask(!grunt.config.get('global.linter').match(/eslint/))
 
-    ).generateFile('linter_jsh',
-      templatePath + '/.jshintrc.tpl', '.jshintrc'
-    ).skipLastTask(!grunt.config.get('global.linter').match(/jshint/)
-    ).mergeJSONFile('jsh_linter_script', 'package.json', {scripts:{'lint':'jshint'}}
-    ).skipLastTask(!grunt.config.get('global.linter').match(/jshint/)
+      .appendTask( tasksFile.mergeJSONFile('linter_es_script',
+        'package.json', {scripts:{'lint':'eslint'}}
+      )).skipLastTask(!grunt.config.get('global.linter').match(/eslint/))
 
-    ).generateFile('linter_jsl',
-      templatePath + '/.jslintrc.tpl', '.jslintrc'
-    ).skipLastTask(!grunt.config.get('global.linter').match(/jslint/)
-    ).mergeJSONFile('jsl_linter_script', 'package.json', {scripts:{'lint':'jslint'}}
-    ).skipLastTask(!grunt.config.get('global.linter').match(/jshint/)
+      // -
+      .appendTask( tasksTemplate.generateFile('linter_jsh',
+        templatePath + '/.jshintrc.tpl', '.jshintrc'
+      )).skipLastTask(!grunt.config.get('global.linter').match(/jshint/))
 
-    ).mergeJSONFile('std_linter_script', 'package.json', {scripts:{'lint':'standard'}}
-    ).skipLastTask(!grunt.config.get('global.linter').match(/standard/)
+      .appendTask( tasksFile.mergeJSONFile('linter_jsh_script',
+        'package.json', {scripts:{'lint':'jshint'}}
+      )).skipLastTask(!grunt.config.get('global.linter').match(/jshint/))
 
-    ).packToTask('linter', programTasks);
+      // -
+      .appendTask( tasksTemplate.generateFile('linter_jsl',
+        templatePath + '/.jslintrc.tpl', '.jslintrc'
+      )).skipLastTask(!grunt.config.get('global.linter').match(/jslint/))
+
+      .appendTask( tasksFile.mergeJSONFile('linter_jsl_script',
+        'package.json', {scripts:{'lint':'jslint'}}
+      )).skipLastTask(!grunt.config.get('global.linter').match(/jslint/))
+
+      // -
+      .appendTask( tasksFile.mergeJSONFile('linter_std_script',
+        'package.json', {scripts:{'lint':'standard'}}
+      )).skipLastTask(!grunt.config.get('global.linter').match(/standard/))
+
+      .packToTask('linter',
+      'Given `global.linter` option in `grunt` config, re-configures `package.json`' +
+      '\nand initialize a default linter configuration given a template.'
+    ).appendTo(main);
 
 
     // -------------------------- ci
-    Tasks(grunt
-    ).generateFile('ci_travis',
-      templatePath + '/.travis.yml', '.travis.yml'
-    ).skipLastTask(!grunt.config.get('global.ci').match(/travis/)
+    TasksWorkflow()
+      // -
+      .appendTask( tasksTemplate.generateFile('ci_travis',
+        templatePath + '/.travis.yml', '.travis.yml'
+      )).skipLastTask(!grunt.config.get('global.ci').match(/travis/))
 
-    ).generateFile('ci_appveyor',
-      templatePath + '/.appveyor.yml', '.appveyor.yml'
-    ).skipLastTask(!grunt.config.get('global.ci').match(/appveyor/)
+      // -
+      .appendTask( tasksTemplate.generateFile('ci_appveyor',
+        templatePath + '/.appveyor.yml', '.appveyor.yml'
+      )).skipLastTask(!grunt.config.get('global.ci').match(/appveyor/))
 
-    ).packToTask('ci', programTasks);
+      // -
+      .packToTask('ci',
+      'Given `global.ci` option in `grunt` config, re-configures `package.json` ' +
+      '\nand initialize a default `ci` configuration given a template.'
+    ).appendTo(main);
 
 
     // -------------------------- clean up
-    Tasks(grunt
-    ).jsonFormat('node_pkg_format', 'package.json'
-    ).jsonFormat('bower_pkg_format', 'bower.json'
-    ).packToTask('cleanup', programTasks);
+    TasksWorkflow()
+      .appendTask( tasksFile.jsonFormat('bower_pkg_format',
+        'bower.json'
+      ))
+      .appendTask( tasksFile.jsonFormat('node_pkg_format',
+        'package.json'
+      ))
+      .packToTask('cleanup',
+      'Clean up to re format `json` files.'
+    ).appendTo(main);
 
 
     // -------------------------- vcs
-    var vcs = Tasks(grunt
-    ).gitInit('vcs_init'
-    ).gitAdd('vcs_add', '<%=run.vcs.add %>'
-    ).gitCommit('vcs_commit', '<%=global.vcs.init_message%>'
-    ).skipLastTask(!!noCommit
-    ).gitPush('vcs_push'
-    ).skipLastTask(!!noPush
-    ).skipAll(grunt.config.get('global.vcs')!=='git'
-    ).skipAll(!!noVCS
-    ).packToTask('vcs', programTasks);
+    TasksWorkflow()
+      .appendTask( tasksGit.gitInit('vcs_init'
+      ))
+      .appendTask( tasksGit.gitAdd('vcs_add'
+      ))
+      .appendTask( tasksGit.gitCommit('vcs_commit',
+        '<%=global.vcs.init_message%>'
+      ))
+      .skipLastTask(!!noCommit)
+      .appendTask( tasksGit.gitPush('vcs_push'
+      ))
+      .skipLastTask(!!noPush)
+      .skipAll(grunt.config.get('global.vcs')!=='git')
+      .skipAll(!!noVCS)
+      .packToTask('vcs',
+      'Given `global.git` option in `grunt` config,' +
+      'initialize a new repository and proceeds steps to put it online (add, commit, push).'
+    ).appendTo(main);
 
 
     // -------------------------- dependencies installation
-    Tasks(grunt
-    ).spawnProcess('npm_install',
-      'npm i'
-    ).spawnProcess('npm_install',
-      'npm i ' + grunt.config.get('global.node_pkg.globalPackages').join(' ')+ ' -g'
-    ).skipLastTask(!!grunt.config.get('global.node_pkg.globalPackages').length
-    ).spawnProcess('bower_install',
-      'bower i'
-    ).packToTask('deps_install', programTasks);
+    var gPkgList = grunt.config.get('global.node_pkg.packages')
+    TasksWorkflow()
+      .appendTask( tasksUtils.spawnProcess('npm_install_local',
+        'npm i'
+      ))
+      .appendTask( tasksUtils.spawnProcess('npm_install_global',
+        'npm i ' + gPkgList.join(' ') + ' -g'
+      ))
+      .skipLastTask(!gPkgList || !gPkgList.length)
+      .appendTask( tasksUtils.spawnProcess('bower_install',
+        'bower i'
+      ))
+      .packToTask('deps_install',
+      'Invoke npm i and bower i'
+    ).appendTo(main);
 
     // that s it.
-    grunt.registerTask('default', programTasks)
+    //grunt.registerTask('default', programTasks)
+    return main
   }
 })
