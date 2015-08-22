@@ -7,12 +7,6 @@ var _ = require('underscore');
 var pkg = require('../package.json');
 var osenv = require('osenv')
 
-var TasksWorkflow = require('../lib/tasks-workflow.js')
-var tasksFile = require('../lib/tasks-file-helper.js')
-var tasksTemplate = require('../lib/tasks-template-helper.js')
-var tasksGit = require('../lib/tasks-git-helper.js')
-var tasksUtils = require('../lib/tasks-utils-helper.js')
-
 var argsObj = cliargs.parse();
 
 if(argsObj.help || argsObj.h){
@@ -58,7 +52,14 @@ if (argsObj.path || argsObj.p) {
 }
 
 
-require('grunt2bin')({
+var grunt2bin = require('grunt2bin')
+var TasksWorkflow = grunt2bin.TasksWorkflow
+var tasksFile = require('../lib/tasks-file-helper.js')
+var tasksTemplate = require('../lib/tasks-template-helper.js')
+var tasksGit = require('../lib/tasks-git-helper.js')
+var tasksUtils = require('../lib/tasks-utils-helper.js')
+
+grunt2bin.handleProgram({
   // -
   config: function(grunt, cwd){
     grunt.loadNpmTasks('grunt-template')
