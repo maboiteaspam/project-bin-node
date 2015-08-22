@@ -30,6 +30,8 @@ Initialize a project about node, github, travis, appveyor, linters, npm and so o
     -v|--version    Version
     --verbose       More verbose
     --debug         Much more verbose
+    --describe      Describe the program workflow, 
+                    give it a [pattern] to get more details.
 
 
 __Initialize a node project__

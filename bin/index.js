@@ -1,9 +1,7 @@
 #!/usr/bin/env node
 
-var util = require("util");
 var cliargs = require('cliargs');
 var path = require('path');
-var _ = require('underscore');
 var pkg = require('../package.json');
 var osenv = require('osenv')
 
@@ -53,7 +51,7 @@ if (argsObj.path || argsObj.p) {
 
 
 var grunt2bin = require('grunt2bin')
-var TasksWorkflow = grunt2bin.TasksWorkflow
+var TasksWorkflow = require('grunt2bin/lib/tasks-workflow')
 var tasksFile = require('../lib/tasks-file-helper.js')
 var tasksTemplate = require('../lib/tasks-template-helper.js')
 var tasksGit = require('../lib/tasks-git-helper.js')
@@ -102,9 +100,7 @@ grunt2bin.handleProgram({
     grunt.setUserGruntfile('project-init.js')
   },
   // -
-  run: function(grunt, cwd){
-
-    var main = new TasksWorkflow()
+  run: function(main, grunt, cwd){
 
     // -------------------------- proper config.
     TasksWorkflow()
