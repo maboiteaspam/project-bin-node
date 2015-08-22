@@ -300,7 +300,7 @@ grunt2bin.handleProgram({
 
 
     // -------------------------- dependencies installation
-    var gPkgList = grunt.config.get('global.node_pkg.packages')
+    var gPkgList = grunt.config.get('global.node_pkg.globalPackages')
     TasksWorkflow()
       .appendTask( tasksUtils.spawnProcess('npm_install_local',
         'npm i .'
