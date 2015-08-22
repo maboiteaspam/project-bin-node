@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
-// bin <%= global.projectName %> by <%= global.author %>
+// bin <%= projectName %> by <%= author %>
 
 var electron = require('electron-prebuilt')
 var proc = require('child_process')
 
-// will something similar to print /Users/maf/.../Electron
+// will print something similar to print /Users/maf/.../Electron
 console.log(electron)
 
 // spawn electron

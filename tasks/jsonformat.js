@@ -4,7 +4,7 @@ module.exports = function (grunt){
   grunt.registerMultiTask('jsonformat', function(){
     var options = this.options()
     var infile = options.infile
-    if (fs.readFileSync(infile)) {
+    if (fs.existsSync(infile)) {
       var k = fs.readFileSync(infile)
       k = JSON.parse(k)
       k = JSON.stringify(k, null, 4)

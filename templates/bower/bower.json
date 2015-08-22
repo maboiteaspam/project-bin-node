@@ -1,13 +1,13 @@
 {
-  "name": "<%= global.projectName %>",
-  "version": "<%= global.projectVersion %>",
+  "name": "<%= projectName %>",
+  "version": "<%= projectVersion %>",
   "authors": [
-    "<%= global.author %>"
+    "<%= author %>"
   ],
-  <% if(global.license){ %>
-"license": "<%= global.license %>",
+  <% if(license){ %>
+"license": "<%= license %>",
 <% } %>
-<% if(global.bower.ignore){ %>
-"ignore": <%=JSON.stringify(global.bower.ignore)%>
+<% if(bower.ignore){ %>
+"ignore": <%=JSON.stringify(bower.ignore)%>
 <% } %>
 }

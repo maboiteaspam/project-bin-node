@@ -1,5 +1,5 @@
 
-// grunt task <%= global.projectName %> by <%= global.author %>
+// grunt task <%= projectName %> by <%= author %>
 
 var pkg = require('package.json');
 

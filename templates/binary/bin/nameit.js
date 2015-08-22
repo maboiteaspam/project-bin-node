@@ -1,5 +1,5 @@
 #!/usr/bin/env node
 
-// bin <%= global.projectName %> by <%= global.author %>
+// bin <%= projectName %> by <%= author %>
 
 var pkg = require('package.json');

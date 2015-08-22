@@ -1,6 +1,6 @@
 #!/usr/bin/env electron
 
-// app <%= global.projectName %> by <%= global.author %>
+// app <%= projectName %> by <%= author %>
 
 var pkg = require('./package.json')
 var app = require('app')

@@ -1,12 +1,12 @@
-# <%= global.projectName %>
-<%= global.description %>
+# <%= projectName %>
+<%= description %>
 
 ## Installation
 Run the following commands to download and install the application:
 
 ```sh
-$  clone https://github.com/<%= global.author %>/<%= global.projectName %> <%= global.projectName %>
-$ cd <%= global.projectName %>
+$  clone https://github.com/<%= author %>/<%= projectName %> <%= projectName %>
+$ cd <%= projectName %>
 $ npm install
 ```
 

@@ -1,5 +1,5 @@
 
-// module <%= global.projectName %> by <%= global.author %>
+// module <%= projectName %> by <%= author %>
 
 var pkg = require('package.json');
 

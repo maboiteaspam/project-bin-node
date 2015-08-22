@@ -1,5 +1,5 @@
 
-// client app for electron-test by maboiteaspam
+// client app for electron-test by <%= author %>
 
 
 // #region work with jquery and the local resources

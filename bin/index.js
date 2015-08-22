@@ -5,6 +5,7 @@ var path = require('path');
 var pkg = require('../package.json');
 var osenv = require('osenv')
 var showusage = require('showusage')
+var _ = require('underscore')
 
 var argsObj = cliargs.parse();
 
@@ -49,7 +50,10 @@ grunt2bin.handleProgram({
       'global': {
         'default_author' : '',
         'author' : '',
-        'repository' : '',
+        'license' : 'wtf',
+        'homepage' : 'https://github.com/<%= global.author %>',
+        'repository' : '<%= global.homepage %>/<%= global.projectName %>',
+        'bugs' : '<%= global.repository %>/issues',
         'vcs' : 'git',
         'ci' : 'travis',
         'linter' : 'eslint',
@@ -60,7 +64,7 @@ grunt2bin.handleProgram({
         'keywords' : '',
         'node_pkg': {
           'entry': 'main.js',
-          'packages':[],
+          'packages':['minimist', 'showusage'],
           'devPackages':[],
           'globalPackages':[]
         },
@@ -129,11 +133,11 @@ grunt2bin.handleProgram({
     // -------------------------- package common
     TasksWorkflow()
       .appendTask( tasksTemplate.generateFile('node_pkg',
-        templatePath + '/package.json', 'package.json'
+        templatePath + '/package.json', 'package.json', '<%=global%>'
       )).appendTask( tasksTemplate.generateFile('node_gitignore',
-        templatePath + '/gitignore.ejs', '.gitignore'
+        templatePath + '/gitignore.ejs', '.gitignore', '<%=global%>'
       )).appendTask( tasksTemplate.generateFile('node_readme',
-        templatePath + '/README.md', 'README.md'
+        templatePath + '/README.md', 'README.md', '<%=global%>'
       )).packToTask('pkg_init',
       'Creates `package.json`, `README.md` and `.gitignore` files given their templates.'
     ).appendTo(main);
@@ -159,7 +163,7 @@ grunt2bin.handleProgram({
     // -------------------------- bin
     TasksWorkflow()
       .appendTask( tasksTemplate.generateFile('bin',
-        templatePath + '/binary/bin/nameit.js', './bin/'+bin+'.js'
+        templatePath + '/binary/bin/nameit.js', './bin/'+bin+'.js', '<%=global%>'
       ))
       .appendTask( tasksFile.mergeJSONFile('bin_script', 'package.json', function () {
           var binOpts = {
@@ -179,19 +183,19 @@ grunt2bin.handleProgram({
     TasksWorkflow()
 
       .appendTask( tasksTemplate.generateDir('layout_lambda',
-        templatePath + '/lambda', cwd
+        templatePath + '/lambda', cwd, '<%=global%>'
       )).skipLastTask(!layout.match(/lambda/g))
 
       .appendTask( tasksTemplate.generateDir('layout_electron',
-        templatePath + '/electron', cwd
+        templatePath + '/electron', cwd, '<%=global%>'
       )).skipLastTask(!layout.match(/electron/g))
 
       .appendTask( tasksTemplate.generateDir('layout_grunt',
-        templatePath + '/grunt', cwd
+        templatePath + '/grunt', cwd, '<%=global%>'
       )).skipLastTask(!layout.match(/grunt/g))
 
       .appendTask( tasksTemplate.generateDir('layout_bower',
-        templatePath + '/bower', cwd
+        templatePath + '/bower', cwd, '<%=global%>'
       )).skipLastTask(!layout.match(/bower/g))
 
       .packToTask('layout_make',
@@ -214,7 +218,7 @@ grunt2bin.handleProgram({
 
       // -
       .appendTask( tasksTemplate.generateFile('linter_jsh',
-        templatePath + '/.jshintrc.tpl', '.jshintrc'
+        templatePath + '/.jshintrc.tpl', '.jshintrc', '<%=global%>'
       )).skipLastTask(!linter.match(/jshint/))
 
       .appendTask( tasksFile.mergeJSONFile('linter_jsh_script',
@@ -223,7 +227,7 @@ grunt2bin.handleProgram({
 
       // -
       .appendTask( tasksTemplate.generateFile('linter_jsl',
-        templatePath + '/.jslintrc.tpl', '.jslintrc'
+        templatePath + '/.jslintrc.tpl', '.jslintrc', '<%=global%>'
       )).skipLastTask(!linter.match(/jslint/))
 
       .appendTask( tasksFile.mergeJSONFile('linter_jsl_script',
@@ -246,12 +250,12 @@ grunt2bin.handleProgram({
     TasksWorkflow()
       // -
       .appendTask( tasksTemplate.generateFile('ci_travis',
-        templatePath + '/.travis.yml', '.travis.yml'
+        templatePath + '/.travis.yml', '.travis.yml', '<%=global%>'
       )).skipLastTask(!ci.match(/travis/))
 
       // -
       .appendTask( tasksTemplate.generateFile('ci_appveyor',
-        templatePath + '/.appveyor.yml', '.appveyor.yml'
+        templatePath + '/.appveyor.yml', '.appveyor.yml', '<%=global%>'
       )).skipLastTask(!ci.match(/appveyor/))
 
       // -
@@ -299,15 +303,17 @@ grunt2bin.handleProgram({
     var gPkgList = grunt.config.get('global.node_pkg.packages')
     TasksWorkflow()
       .appendTask( tasksUtils.spawnProcess('npm_install_local',
-        'npm i'
+        'npm i .'
       ))
       .appendTask( tasksUtils.spawnProcess('npm_install_global',
         'npm i ' + gPkgList.join(' ') + ' -g'
       ))
       .skipLastTask(!gPkgList || !gPkgList.length)
+
       .appendTask( tasksUtils.spawnProcess('bower_install',
-        'bower i'
-      ))
+        'bower i .'
+      )).skipLastTask(!layout.match(/bower/g))
+
       .packToTask('deps_install',
       'Invoke npm i and bower i'
     ).appendTo(main);
