@@ -4,30 +4,12 @@ var cliargs = require('cliargs');
 var path = require('path');
 var pkg = require('../package.json');
 var osenv = require('osenv')
+var showusage = require('showusage')
 
 var argsObj = cliargs.parse();
 
 if(argsObj.help || argsObj.h){
-  console.log('');
-  console.log('%s', pkg.name);
-  console.log(' %s', pkg.description);
-  console.log('');
-  console.log('%s', 'Usage');
-  console.log(' %s [-p|--path <path>]', pkg.name);
-  console.log(' %s --version', pkg.name);
-  console.log(' %s --h|--help', pkg.name);
-  console.log(' %s --nocommit', pkg.name);
-  console.log(' %s --nopush', pkg.name);
-  console.log(' %s --novcs', pkg.name);
-  console.log('');
-  console.log('%s', 'Options');
-  console.log(' -p|--path <path>\t Path to initialize');
-  console.log(' -l|--layout <layout>\t App layout to use lamba|electron');
-  console.log(' -n|--nocommit \t Do not commit or added files');
-  console.log(' --nopush \t Do not push after commit');
-  console.log(' --novcs \t Do not apply any vcs');
-  console.log('');
-  process.exit(1 /* ? is correct ? */);
+  return showusage(path.join(__dirname, '..'), pkg.name, 'Usage')
 }
 
 if(argsObj.version){
