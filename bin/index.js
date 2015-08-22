@@ -128,7 +128,6 @@ require('grunt2bin')({
       '\nfinally ensure the global gitinore file contains some values like `.idea`.'
     ).appendTo(main);
 
-
     // -------------------------- package purpose
     TasksWorkflow()
       .appendTask( tasksUtils.multiLineInput('description',
@@ -223,38 +222,39 @@ require('grunt2bin')({
 
 
     // -------------------------- linter
+    var linter = grunt.config.get('global.linter')
     TasksWorkflow()
       // -
       .appendTask( tasksUtils.spawnProcess('linter_es',
         'eslint --init', {stdinRawMode: true}
-      )).skipLastTask(!grunt.config.get('global.linter').match(/eslint/))
+      )).skipLastTask(!linter.match(/eslint/))
 
       .appendTask( tasksFile.mergeJSONFile('linter_es_script',
         'package.json', {scripts:{'lint':'eslint'}}
-      )).skipLastTask(!grunt.config.get('global.linter').match(/eslint/))
+      )).skipLastTask(!linter.match(/eslint/))
 
       // -
       .appendTask( tasksTemplate.generateFile('linter_jsh',
         templatePath + '/.jshintrc.tpl', '.jshintrc'
-      )).skipLastTask(!grunt.config.get('global.linter').match(/jshint/))
+      )).skipLastTask(!linter.match(/jshint/))
 
       .appendTask( tasksFile.mergeJSONFile('linter_jsh_script',
         'package.json', {scripts:{'lint':'jshint'}}
-      )).skipLastTask(!grunt.config.get('global.linter').match(/jshint/))
+      )).skipLastTask(!linter.match(/jshint/))
 
       // -
       .appendTask( tasksTemplate.generateFile('linter_jsl',
         templatePath + '/.jslintrc.tpl', '.jslintrc'
-      )).skipLastTask(!grunt.config.get('global.linter').match(/jslint/))
+      )).skipLastTask(!linter.match(/jslint/))
 
       .appendTask( tasksFile.mergeJSONFile('linter_jsl_script',
         'package.json', {scripts:{'lint':'jslint'}}
-      )).skipLastTask(!grunt.config.get('global.linter').match(/jslint/))
+      )).skipLastTask(!linter.match(/jslint/))
 
       // -
       .appendTask( tasksFile.mergeJSONFile('linter_std_script',
         'package.json', {scripts:{'lint':'standard'}}
-      )).skipLastTask(!grunt.config.get('global.linter').match(/standard/))
+      )).skipLastTask(!linter.match(/standard/))
 
       .packToTask('linter',
       'Given `global.linter` option in `grunt` config, re-configures `package.json`' +
@@ -263,16 +263,17 @@ require('grunt2bin')({
 
 
     // -------------------------- ci
+    var ci = grunt.config.get('global.ci')
     TasksWorkflow()
       // -
       .appendTask( tasksTemplate.generateFile('ci_travis',
         templatePath + '/.travis.yml', '.travis.yml'
-      )).skipLastTask(!grunt.config.get('global.ci').match(/travis/))
+      )).skipLastTask(!ci.match(/travis/))
 
       // -
       .appendTask( tasksTemplate.generateFile('ci_appveyor',
         templatePath + '/.appveyor.yml', '.appveyor.yml'
-      )).skipLastTask(!grunt.config.get('global.ci').match(/appveyor/))
+      )).skipLastTask(!ci.match(/appveyor/))
 
       // -
       .packToTask('ci',

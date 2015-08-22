@@ -18,7 +18,7 @@ module.exports = function (grunt){
         ? ''
         : fs.readFileSync(file) + '';
       items.forEach(function (ex) {
-        if (!ignored.match(new RegExp('^'+rquote(ex)+'$'))) {
+        if (!ignored.match(new RegExp('('+rquote(ex)+')'))) {
           ignored += '\n'+ex
           added.push(ex)
         }
