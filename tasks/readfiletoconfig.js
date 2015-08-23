@@ -20,6 +20,10 @@ module.exports = function (grunt){
 
     content = refine(content)
 
+    if (content) {
+      grunt.log.ok('saved value to ' + save_to)
+    }
+
     grunt.config.set(save_to, content)
 
   })
