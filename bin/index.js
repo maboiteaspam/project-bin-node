@@ -44,13 +44,14 @@ grunt2bin.handleProgram({
   // -
   config: function(grunt, cwd){
     grunt.loadNpmTasks('grunt-template')
+    grunt.loadNpmTasks('grunt-git')
     grunt.loadTasks('tasks')
     // -
     grunt.initConfig({
       'global': {
         'default_author' : '',
         'author' : '',
-        'license' : 'wtf',
+        'license' : '',
         'homepage' : 'https://github.com/<%= global.author %>',
         'repository' : '<%= global.homepage %>/<%= global.projectName %>',
         'bugs' : '<%= global.repository %>/issues',
@@ -59,12 +60,12 @@ grunt2bin.handleProgram({
         'linter' : 'eslint',
         'projectVersion' : '0.0.1',
         'projectName' : path.basename(wdPath),
-        'init_message' : 'init <% global.projectName %> project',
+        'init_message' : 'init project: <%=global.projectName %>',
         'description' : '',
         'keywords' : '',
         'node_pkg': {
           'entry': 'main.js',
-          'packages':['minimist', 'showusage'],
+          'packages':[],
           'devPackages':[],
           'globalPackages':[]
         },
@@ -282,10 +283,12 @@ grunt2bin.handleProgram({
     TasksWorkflow()
       .appendTask( tasksGit.gitInit('vcs_init'
       ))
-      .appendTask( tasksGit.gitAdd('vcs_add'
+      .appendTask( tasksGit.gitAdd('vcs_add',
+        '<%=run.vcs.add%>'
       ))
       .appendTask( tasksGit.gitCommit('vcs_commit',
-        '<%=global.vcs.init_message%>'
+        '<%=global.init_message%>',
+        {allowEmpty: true}
       ))
       .skipLastTask(!!noCommit)
       .appendTask( tasksGit.gitPush('vcs_push'
@@ -311,7 +314,7 @@ grunt2bin.handleProgram({
       .skipLastTask(!gPkgList || !gPkgList.length)
 
       .appendTask( tasksUtils.spawnProcess('bower_install',
-        'bower i .'
+        'bower i'
       )).skipLastTask(!layout.match(/bower/g))
 
       .packToTask('deps_install',
