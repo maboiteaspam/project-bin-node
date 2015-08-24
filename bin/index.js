@@ -43,6 +43,7 @@ var tasksUtils = require('../lib/tasks-utils-helper.js')
 grunt2bin.handleProgram({
   // -
   config: function(grunt, cwd){
+    // -
     grunt.loadNpmTasks('grunt-template')
     grunt.loadNpmTasks('grunt-git')
     grunt.loadTasks('tasks')
@@ -322,7 +323,5 @@ grunt2bin.handleProgram({
     ).appendTo(main);
 
     // that s it.
-    //grunt.registerTask('default', programTasks)
-    return main
   }
 })
