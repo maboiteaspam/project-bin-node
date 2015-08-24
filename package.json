@@ -25,6 +25,7 @@
     "cline-parser": "^1.0.3",
     "editors": "^1.1.4",
     "errno-codes": "^1.0.2",
+    "github": "^0.2.4",
     "glob": "~5.0.10",
     "grunt": "^0.4.5",
     "grunt-git": "^0.3.5",
