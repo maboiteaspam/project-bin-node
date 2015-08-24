@@ -36,6 +36,10 @@ Initialize a project about node, github, travis, appveyor, linters, npm and so o
 
 __Initialize a node project__
 
+This will initialize a new project on the current directory. 
+`--layout` argument helps you to initialize a specific type of application.
+You can mixin multiple layouts.
+
     project-node
     project-node -l lambda
     project-node --layout=grunt,bower
@@ -50,12 +54,17 @@ __Specify a path__
 
 __Just try out__
 
+The task, by default, will try to git init/add/commit/push to github.
+You can control that behavior via those switches.
+
     project-node --novcs
     project-node --nocommit
     project-node --nopush
 
 
 __Helps ect__
+
+Useful things. Enjoy the Markdown syntax support within your command line.
 
     showusage project-bin-node
     
@@ -68,6 +77,16 @@ __Helps ect__
 ## Initialization descriptions
 
 This section describes the process implemented to reach a module setup.
+
+Which actions are run, which files are created, which binary are invoked.
+
+You can always get those information using `--describe` switch.
+
+```sh
+project-node -l grunt,bower --describe
+project-node -l grunt,bower --describe layout
+project-node -l grunt,bower --describe vcs_add
+```
 
 ### General setup
 
@@ -104,45 +123,65 @@ This section describes the process implemented to reach a module setup.
 
 ### Expected files layout
 
-##### lambda layout
+Describe resulting files layout after `project-node-init` has run.
+
+Obviously, it will be impacted by your configuration.
+
+##### Common layout
+
+This is created whatever the chosen layout.
+
 - README.md
 - package.json
 - .gitignore
 - linter.rc
 - ci.config
+
+##### lambda layout
+
+Layout for a lambda node package such library specifics.
+
 - index.js
 
 ##### electron layout
-- README.md
-- package.json
-- .gitignore
-- .bowerrc
-- linter.rc
-- ci.config
+
+Layout for an electron app. 
+Prepares for you a backend / frontend kick starters.
+You should probably invoke bower with it.
+
 - app.js, an electron app kick-starter.
 - bin.js, an electron bin kick-starter.
 - /static/, an electron front app kick-starter.
 
 ##### grunt layout
-- README.md
-- package.json
-- .gitignore
-- linter.rc
-- ci.config
+
+Layout for a Grunt module.
+
 - Gruntfile.js
 
 ##### bower layout
-- README.md
-- package.json
-- .gitignore
-- linter.rc
-- ci.config
+
+Layout for a module using bower.
+
 - bower.json
 - .bowerrc
 
-## Configuration
+## Configuration and modularity
 
-More to explain. Maybe this will be up to date by the time you got there https://github.com/maboiteaspam/grunt2bin
+This section describes the configuration mechanism available within this program.
+
+### Grunt config
+##### Per project
+##### Per user
+##### mixin
+
+### Tasks workflow
+##### Per project
+##### Per user
+##### mixin
+
+More to explain. 
+Maybe this will be up to date by the time you got there https://github.com/maboiteaspam/grunt2bin
 
 
 ## Todo
