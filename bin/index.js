@@ -57,6 +57,7 @@ grunt2bin.handleProgram({
         'repository' : '<%= global.homepage %>/<%= global.projectName %>',
         'bugs' : '<%= global.repository %>/issues',
         'vcs' : 'git',
+        'branch' : 'master',
         'ci' : 'travis',
         'linter' : 'eslint',
         'projectVersion' : '0.0.1',
@@ -292,6 +293,9 @@ grunt2bin.handleProgram({
         {allowEmpty: true}
       ))
       .skipLastTask(!!noCommit)
+      .appendTask( tasksGit.setUpstream('vcs_set_upstream', '<%=global.branch%>'
+      ))
+      .skipLastTask(!!noPush)
       .appendTask( tasksGit.gitPush('vcs_push'
       ))
       .skipLastTask(!!noPush)
