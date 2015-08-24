@@ -3,7 +3,7 @@ var spawn = child_process.spawn;
 
 module.exports = function (grunt){
 
-  grunt.registerTask('githubrelease', function(){
+  grunt.registerMultiTask('githubrelease', function(){
     var done = this.async()
     var options = this.options()
 
@@ -38,6 +38,28 @@ module.exports = function (grunt){
       draft: !!options.isDraft,
       prerelease: !!options.isPrerelease
     }, done);
+  })
+
+  grunt.registerMultiTask('githubrepo', function(){
+    var done = this.async()
+    var options = this.options()
+    var ghClient = require('github');
+    var ghApi = new ghClient({
+      version: "3.0.0"
+    });
+    ghApi.authenticate(options.auth);
+    ghApi.repos.create(options.repo, done);
+  })
+
+  grunt.registerMultiTask('githubauth', function(){
+    var done = this.async()
+    var options = this.options()
+    var ghClient = require('github');
+    var ghApi = new ghClient({
+      version: "3.0.0"
+    });
+    ghApi.authenticate(options.auth);
+    ghApi.repos.getAll({type: 'all'}, done);
   })
 
 }
