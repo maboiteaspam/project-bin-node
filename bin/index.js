@@ -38,6 +38,7 @@ var TasksWorkflow = require('grunt2bin/lib/tasks-workflow')
 var tasksFile = require('../lib/tasks-file-helper.js')
 var tasksTemplate = require('../lib/tasks-template-helper.js')
 var tasksGit = require('../lib/tasks-git-helper.js')
+var tasksGh = require('../lib/tasks-gh-helper.js')
 var tasksUtils = require('../lib/tasks-utils-helper.js')
 
 grunt2bin.handleProgram({
@@ -53,9 +54,9 @@ grunt2bin.handleProgram({
         'default_author' : '',
         'author' : '',
         'license' : '',
-        'homepage' : 'https://github.com/<%= global.author %>',
-        'repository' : '<%= global.homepage %>/<%= global.projectName %>',
-        'bugs' : '<%= global.repository %>/issues',
+        'homepage' : 'https://github.com/<%= global.author %>/<%= global.projectName %>',
+        'repository' : '<%= global.homepage %>.git',
+        'bugs' : '<%= global.homepage %>/issues',
         'vcs' : 'git',
         'branch' : 'master',
         'ci' : 'travis',
@@ -65,6 +66,13 @@ grunt2bin.handleProgram({
         'init_message' : 'init project: <%=global.projectName %>',
         'description' : '',
         'keywords' : '',
+        'gh': {
+          'auth': {
+            type: 'client',
+            username: '',
+            password: ''
+          }
+        },
         'node_pkg': {
           'entry': 'main.js',
           'packages':[],
@@ -91,6 +99,14 @@ grunt2bin.handleProgram({
   // -
   run: function(main, grunt, cwd){
 
+    // -------------------------- check auth.
+    TasksWorkflow()
+      .appendTask( tasksGh.ghCheckAuth('svcs_check_auth', '<%=global.gh.auth%>'
+      ))
+      .packToTask('check_auth',
+      'Ensure the various auth mechanism involved works properly before anything is started.'
+    ).appendTo(main);
+
     // -------------------------- proper config.
     TasksWorkflow()
       .appendTask( tasksGit.getGitConfig('get_git_config',
@@ -111,7 +127,7 @@ grunt2bin.handleProgram({
       'At first, it ensure the grunt configuration holds some values for `author` and `repository` entries.' +
       '\nThen, check `git` system configuration in order to ensure a global `excludefiles` is set.' +
       '\nConfigures it to something like `$HOME/.gitignore` if it is not done yet.' +
-      '\nfinally ensure the global gitinore file contains some values like `.idea`.'
+      '\nfinally ensure the global gitignore file contains some values like `.idea`.'
     ).appendTo(main);
 
     // -------------------------- package purpose
@@ -281,7 +297,7 @@ grunt2bin.handleProgram({
     ).appendTo(main);
 
 
-    // -------------------------- vcs
+    // -------------------------- vcs apply
     TasksWorkflow()
       .appendTask( tasksGit.gitInit('vcs_init'
       ))
@@ -292,18 +308,45 @@ grunt2bin.handleProgram({
         '<%=global.init_message%>',
         {allowEmpty: true}
       ))
-      .skipLastTask(!!noCommit)
+      .skipAll(grunt.config.get('global.vcs')!=='git')
+      .skipAll(!!noCommit)
+      .skipAll(!!noVCS)
+      .packToTask('vcs_apply',
+      'Given `global.init_message` option in `grunt` config,' +
+      'applies a new vcs on the current directory (init, add, commit).'
+    ).appendTo(main);
+
+
+    // -------------------------- vcs config remote
+    TasksWorkflow()
+      .appendTask( tasksGh.ghRepo('vcs_create_remote_repo', '<%=global.gh.auth%>', {
+          name: '<%=global.projectName%>',
+          description: '<%=global.description%>',
+          homepage: '<%=global.homepage%>'
+        }
+      ))
+      .appendTask( tasksGit.addOrigin('vcs_add_origin', '<%=global.repository%>'
+      ))
       .appendTask( tasksGit.setUpstream('vcs_set_upstream', '<%=global.branch%>'
       ))
-      .skipLastTask(!!noPush)
-      .appendTask( tasksGit.gitPush('vcs_push'
-      ))
-      .skipLastTask(!!noPush)
       .skipAll(grunt.config.get('global.vcs')!=='git')
       .skipAll(!!noVCS)
-      .packToTask('vcs',
+      .skipAll(!!noPush)
+      .packToTask('vcs_config_remote',
+      'Given `global.branch` and `global.repository` options from global `grunt` config,' +
+      'add a new remote named origin and configure it as upstream to the new repository.'
+    ).appendTo(main);
+
+
+    // -------------------------- vcs push
+    TasksWorkflow()
+      .appendTask( tasksGit.gitPush('vcs_push'))
+      .skipAll(grunt.config.get('global.vcs')!=='git')
+      .skipAll(!!noPush)
+      .skipAll(!!noVCS)
+      .packToTask('vcs_push',
       'Given `global.git` option in `grunt` config,' +
-      'initialize a new repository and proceeds steps to put it online (add, commit, push).'
+      'Push the new repository to the remote origin..'
     ).appendTo(main);
 
 
