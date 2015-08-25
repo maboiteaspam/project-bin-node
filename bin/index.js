@@ -99,15 +99,16 @@ grunt2bin.handleProgram({
   // -
   run: function(main, grunt, cwd){
 
-    // -------------------------- check auth.
+    //region -------------------------- check auth.
     TasksWorkflow()
       .appendTask( tasksGh.ghCheckAuth('svcs_check_auth', '<%=global.gh.auth%>', '<%=global.gh.config%>'
       ))
       .packToTask('check_auth',
       'Ensure the various auth mechanism involved works properly before anything is started.'
     ).appendTo(main);
+    //endregion
 
-    // -------------------------- proper config.
+    //region -------------------------- proper config.
     TasksWorkflow()
       .appendTask( tasksGit.getGitConfig('get_git_config',
         'user.name', 'global.default_author', true
@@ -129,8 +130,9 @@ grunt2bin.handleProgram({
       '\nConfigures it to something like `$HOME/.gitignore` if it is not done yet.' +
       '\nfinally ensure the global gitignore file contains some values like `.idea`.'
     ).appendTo(main);
+    //endregion
 
-    // -------------------------- package purpose
+    //region -------------------------- package purpose
     TasksWorkflow()
       .appendTask( tasksUtils.multiLineInput('description',
         'Please enter the module description',
@@ -147,9 +149,10 @@ grunt2bin.handleProgram({
       'Aims to gather information about the module such the `description` and the `keywords`.' +
       '\nModule name is always guessed from the directory name of the `cwd`.'
     ).appendTo(main);
+    //endregion
 
 
-    // -------------------------- package common
+    //region -------------------------- package common
     TasksWorkflow()
       .appendTask( tasksTemplate.generateFile('node_pkg',
         templatePath + '/package.json', 'package.json', '<%=global%>'
@@ -160,26 +163,10 @@ grunt2bin.handleProgram({
       )).packToTask('pkg_init',
       'Creates `package.json`, `README.md` and `.gitignore` files given their templates.'
     ).appendTo(main);
+    //endregion
 
 
-    // -------------------------- dependencies setup
-    var dPkgList = grunt.config.get('global.node_pkg.devPackages')
-    var pkgList = grunt.config.get('global.node_pkg.packages')
-    TasksWorkflow()
-      .appendTask( tasksFile.mergeJSONFile('deps_pkg_save', 'package.json',
-        {dependencies: pkgList}
-      )).skipLastTask(!pkgList || !pkgList.length)
-
-      .appendTask( tasksFile.mergeJSONFile('deps_dpkg_save', 'package.json',
-        {devDependencies: dPkgList}
-      )).skipLastTask(!dPkgList || !dPkgList.length)
-
-      .packToTask('deps_configure',
-      'Re-configures `package.json` to add a set of pre defined `dependencies` and `dev-dependencies`.'
-    ).appendTo(main);
-
-
-    // -------------------------- bin
+    //region -------------------------- bin
     TasksWorkflow()
       .appendTask( tasksTemplate.generateFile('bin',
         templatePath + '/binary/bin/nameit.js', './bin/'+bin+'.js', '<%=global%>'
@@ -196,9 +183,10 @@ grunt2bin.handleProgram({
       'Only when `-b|--bin` option is provided.' +
       '\nRe-configures the `package.json` file and create new bin files structure given their template.'
     ).appendTo(main);
+    //endregion
 
 
-    // -------------------------- layout
+    //region -------------------------- layout
     TasksWorkflow()
 
       .appendTask( tasksTemplate.generateDir('layout_lambda',
@@ -221,9 +209,10 @@ grunt2bin.handleProgram({
       'Only when `-l|--layout` option is provided.' +
       '\nRe-configures the `package.json` file and create new bin files structure given their template.'
     ).appendTo(main);
+    //endregion
 
 
-    // -------------------------- linter
+    //region -------------------------- linter
     var linter = grunt.config.get('global.linter')
     TasksWorkflow()
       // -
@@ -267,9 +256,10 @@ grunt2bin.handleProgram({
       'Given `global.linter` option in `grunt` config, re-configures `package.json`' +
       '\nand initialize a default linter configuration given a template.'
     ).appendTo(main);
+    //endregion
 
 
-    // -------------------------- ci
+    //region -------------------------- ci
     var ci = grunt.config.get('global.ci')
     TasksWorkflow()
       // -
@@ -287,9 +277,10 @@ grunt2bin.handleProgram({
       'Given `global.ci` option in `grunt` config, re-configures `package.json` ' +
       '\nand initialize a default `ci` configuration given a template.'
     ).appendTo(main);
+    //endregion
 
 
-    // -------------------------- clean up
+    //region -------------------------- clean up
     TasksWorkflow()
       .appendTask( tasksFile.jsonFormat('bower_pkg_format',
         'bower.json'
@@ -300,9 +291,10 @@ grunt2bin.handleProgram({
       .packToTask('cleanup',
       'Clean up to re format `json` files.'
     ).appendTo(main);
+    //endregion
 
 
-    // -------------------------- vcs apply
+    //region -------------------------- vcs apply
     TasksWorkflow()
       .appendTask( tasksGit.gitInit('vcs_init'
       ))
@@ -320,9 +312,10 @@ grunt2bin.handleProgram({
       'Given `global.init_message` option in `grunt` config,' +
       'applies a new vcs on the current directory (init, add, commit).'
     ).appendTo(main);
+    //endregion
 
 
-    // -------------------------- vcs config remote
+    //region -------------------------- vcs config remote
     TasksWorkflow()
       .appendTask( tasksGh.ghRepo('vcs_create_remote_repo', '<%=global.gh.auth%>', {
           name: '<%=global.projectName%>',
@@ -341,9 +334,10 @@ grunt2bin.handleProgram({
       'Given `global.branch` and `global.repository` options from global `grunt` config,' +
       'add a new remote named origin and configure it as upstream to the new repository.'
     ).appendTo(main);
+    //endregion
 
 
-    // -------------------------- vcs push
+    //region -------------------------- vcs push
     TasksWorkflow()
       .appendTask( tasksGit.gitPush('vcs_push'))
       .skipAll(grunt.config.get('global.vcs')!=='git')
@@ -353,13 +347,22 @@ grunt2bin.handleProgram({
       'Given `global.git` option in `grunt` config,' +
       'Push the new repository to the remote origin..'
     ).appendTo(main);
+    //endregion
 
 
-    // -------------------------- dependencies installation
+    //region -------------------------- dependencies installation
     var gPkgList = grunt.config.get('global.node_pkg.globalPackages')
+    var dPkgList = grunt.config.get('global.node_pkg.devPackages')
+    var pkgList = grunt.config.get('global.node_pkg.packages')
     TasksWorkflow()
       .appendTask( tasksUtils.spawnProcess('npm_install_local',
         'npm i .'
+      ))
+      .appendTask( tasksUtils.spawnProcess('npm_install_global',
+        'npm i ' + pkgList.join(' ') + ' --save'
+      ))
+      .appendTask( tasksUtils.spawnProcess('npm_install_global',
+        'npm i ' + dPkgList.join(' ') + ' --save-dev'
       ))
       .appendTask( tasksUtils.spawnProcess('npm_install_global',
         'npm i ' + gPkgList.join(' ') + ' -g'
@@ -373,6 +376,7 @@ grunt2bin.handleProgram({
       .packToTask('deps_install',
       'Invoke npm i and bower i'
     ).appendTo(main);
+    //endregion
 
     // that s it.
   }
