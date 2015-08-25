@@ -1,23 +1,9 @@
+var fs = require('fs')
+var rquote = require('regexp-quote')
 var child_process = require('child_process')
 var spawn = child_process.spawn;
 
 module.exports = function (grunt){
-
-  grunt.registerTask('gitinit', function(){
-    var done = this.async()
-    var options = this.options()
-    var args = ['init'];
-    ('path' in options)&& args.push(options.path);
-    ('shared' in options)&& args.push('--shared', options.shared);
-    ('template' in options)&& args.push('--template', options.template);
-    ('gitDir' in options)&& args.push('--separate-git-dir', options.gitDir);
-    ('bare' in options)&& args.push('--bare ');
-    ('quiet' in options)&& args.push('--quiet ');
-    spawn('git', args, {stdio:'inherit'})
-      .on('close', function () {
-        done()
-      })
-  })
 
   grunt.registerMultiTask('gitglobalexcludesfile', function(){
     var done = this.async()
@@ -108,12 +94,12 @@ module.exports = function (grunt){
         ? ''
         : fs.readFileSync(file) + '';
       items.forEach(function (ex) {
-        if (!ignored.match(new RegExp('('+rquote(ex)+')'))) {
+        if (!ignored.match(new RegExp('(' + rquote(ex) + ')'))) {
           ignored += '\n'+ex
           added.push(ex)
         }
       });
-      fs.writeFileSync(file, ignored)
+      fs.writeFileSync (file, ignored)
       if (added.length) grunt.log.ok('Added new entries:' + added.join(','))
       grunt.log.ok('All fine !')
     }
