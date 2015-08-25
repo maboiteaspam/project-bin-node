@@ -235,6 +235,11 @@ grunt2bin.handleProgram({
         'package.json', {scripts:{'lint':'eslint'}}
       )).skipLastTask(!linter.match(/eslint/))
 
+      .appendTask( tasksFile.mergeGruntConfig('linter_vcs_add',{
+          run:{vcs:{add:['.eslintrc']}}
+        }
+      )).skipLastTask(!linter.match(/eslint/))
+
       // -
       .appendTask( tasksTemplate.generateFile('linter_jsh',
         templatePath + '/.jshintrc.tpl', '.jshintrc', '<%=global%>'
