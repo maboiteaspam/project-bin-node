@@ -1,8 +1,8 @@
 {
-  "name": "<%= projectName %>",
-  "version": "<%= projectVersion %>",
-  "description": "<%= description %>",
-  "main": "<%= node_pkg.entry %>",
+  "name": <%= JSON.stringify(projectName) %>,
+  "version": <%= JSON.stringify(projectVersion) %>,
+  "description": <%= JSON.stringify(description) %>,
+  "main": <%= JSON.stringify(node_pkg.entry) %>,
   "scripts": {
 <% if(node_pkg.mocha){ %>
     "test": "mocha"
@@ -10,21 +10,21 @@
   },
   "bin": {},
   "keywords": <%= JSON.stringify(keywords) %>,
-  "author": "<%= author %>"
+  "author": <%= JSON.stringify(author) %>
 <% if(license){ %>
-,"license": "<%= license %>"
+,"license": <%= JSON.stringify(license) %>
 <% } %>
 <% if(homepage){ %>
-,"homepage": "<%= homepage %>"
+,"homepage": <%= JSON.stringify(homepage) %>
 <% } %>
 <% if(repository){ %>
 ,"repository": {
-    "url": "<%= repository %>"
+    "url": <%= JSON.stringify(repository) %>
   }
 <% } %>
 <% if(bugs){ %>
 ,"bugs": {
-    "url": "<%= bugs %>"
+    "url": <%= JSON.stringify(bugs) %>
   }
 <% } %>
 }
