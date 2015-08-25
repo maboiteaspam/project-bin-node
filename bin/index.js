@@ -136,7 +136,8 @@ grunt2bin.handleProgram({
     TasksWorkflow()
       .appendTask( tasksUtils.multiLineInput('description',
         'Please enter the module description',
-        'global.description'
+        'global.description',
+        function(v){return v.replace(/\s+$/, '')}
       )).skipLastTask(!!grunt.config.get('global.description').length)
 
       .appendTask( tasksUtils.multiLineInput('keywords',
