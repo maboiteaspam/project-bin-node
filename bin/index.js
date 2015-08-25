@@ -101,7 +101,7 @@ grunt2bin.handleProgram({
 
     // -------------------------- check auth.
     TasksWorkflow()
-      .appendTask( tasksGh.ghCheckAuth('svcs_check_auth', '<%=global.gh.auth%>'
+      .appendTask( tasksGh.ghCheckAuth('svcs_check_auth', '<%=global.gh.auth%>', '<%=global.gh.config%>'
       ))
       .packToTask('check_auth',
       'Ensure the various auth mechanism involved works properly before anything is started.'
@@ -235,7 +235,7 @@ grunt2bin.handleProgram({
         'package.json', {scripts:{'lint':'eslint'}}
       )).skipLastTask(!linter.match(/eslint/))
 
-      .appendTask( tasksFile.mergeGruntConfig('linter_vcs_add',{
+      .appendTask( tasksUtils.mergeGruntConfig('linter_vcs_add',{
           run:{vcs:{add:['.eslintrc']}}
         }
       )).skipLastTask(!linter.match(/eslint/))
