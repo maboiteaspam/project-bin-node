@@ -1,5 +1,6 @@
 var child_process = require('child_process')
 var spawn = child_process.spawn;
+var Spinner = require('cli-spinner').Spinner;
 
 module.exports = function (grunt){
 
@@ -54,12 +55,19 @@ module.exports = function (grunt){
   grunt.registerMultiTask('githubauth', function(){
     var done = this.async()
     var options = this.options()
+    var ghAuth = options.auth
+    var ghConfig = options.config
     var ghClient = require('github');
-    var ghApi = new ghClient({
-      version: "3.0.0"
+    ghConfig.debug = grunt.option('debug') || grunt.option('verbose')
+    var ghApi = new ghClient(ghConfig);
+    ghApi.authenticate(ghAuth);
+    var spinner = new Spinner('processing.. %s');
+    spinner.setSpinnerString(10);
+    spinner.start();
+    ghApi.repos.getAll({type: 'all'}, function (err) {
+      spinner.stop(true);
+      done(err)
     });
-    ghApi.authenticate(options.auth);
-    ghApi.repos.getAll({type: 'all'}, done);
   })
 
 }
