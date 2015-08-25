@@ -185,10 +185,9 @@ module.exports = function(grunt) {
     var options = this.options();
     var config = options.config
 
-    TasksWorkflow.merge(grunt.config.data, options, TasksWorkflow.mergeArrays);
+    TasksWorkflow.merge(grunt.config.data, config, TasksWorkflow.mergeArrays);
 
     grunt.log.ok('Grunt config merged with')
-    grunt.log.writeflags(options)
 
   })
 
