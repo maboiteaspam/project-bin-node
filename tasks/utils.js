@@ -1,7 +1,6 @@
 
 var fs = require('fs');
 var spawn = require('child_process').spawn;
-var chalk = require('chalk');
 var cParser = require('cline-parser');
 var inquirer = require('inquirer')
 var editor = require('editors');
@@ -46,7 +45,7 @@ module.exports = function(grunt) {
         }
         cb();
       });
-    grunt.verbose.writeln('Command:', chalk.yellow(cmd));
+    grunt.verbose.writeln('Command:', cmd);
   });
 
   grunt.registerMultiTask('readfiletoconfig', function(){
