@@ -140,4 +140,43 @@ module.exports = function (grunt){
       })
   })
 
+  grunt.registerMultiTask('gitpush', function(){
+    var done = this.async()
+    var opts = this.options()
+    opts.remote = opts.remote || 'origin'
+    var args = [];
+    opts.auth && opts.auth.password && (args.push(['-c']),args.push(['core.askpass=true']));
+    args.push(['push'])
+    opts.remote && (args.push(opts.remote));
+    opts.branch && (args.push(opts.branch));
+    opts.all && (args.push('--all'));
+    opts.upstream && (args.push('--set-upstream'));
+    opts.force && (args.push('--set-force'));
+
+    var answers = [
+      {q: /^Username/i, r: opts.auth.username},
+      {q: /^Password/i, r: opts.auth.password}
+    ]
+
+    var p= spawn('git', args, {stdio:'inherit'})
+      .on('close', function () {
+        done()
+      });
+    p.stdout.on('data', function(d) {
+      d = '' + d;
+      answers.forEach(function(answer){
+        if (answer.q.match(d)) {
+          p.stdin.write (grunt.template.process(answer.r))
+        }
+      })
+    });
+    p.stderr.on('data', function(d) {
+      d = '' + d;
+      answers.forEach(function(answer){
+        if (answer.q.match(d)) {
+          p.stdin.write (grunt.template.process(answer.r))
+        }
+      })
+    });
+  })
 }

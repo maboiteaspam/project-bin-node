@@ -13,7 +13,8 @@ module.exports = function(grunt) {
     var options = this.options({
       spawn: null,
       failOnError: true,
-      saveTo: null
+      saveTo: null,
+      answers: null
     });
     var cmd = this.data.command;
 
@@ -32,7 +33,7 @@ module.exports = function(grunt) {
       else spawnOpts = {stdio: 'pipe'}
     }
     var error;
-    spawn(cmd.prg, cmd.args, spawnOpts)
+    var p = spawn(cmd.prg, cmd.args, spawnOpts)
       .on('error', function (err) {
         error = err
       })
@@ -45,6 +46,22 @@ module.exports = function(grunt) {
         }
         cb();
       });
+    p.stdout.on('data', function(d) {
+      d = '' + d;
+      (options.answers || []).forEach(function(answer){
+        if (answer.q.match(d)) {
+          p.stdin.write (grunt.template.process(answer.r))
+        }
+      })
+    })
+    p.stderr.on('data', function(d) {
+      d = '' + d;
+      (options.answers || []).forEach(function(answer){
+        if (answer.q.match(d)) {
+          p.stdin.write (grunt.template.process(answer.r))
+        }
+      })
+    })
     grunt.verbose.writeln('Command:', cmd);
   });
 
