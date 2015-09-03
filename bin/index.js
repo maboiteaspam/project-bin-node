@@ -336,7 +336,7 @@ grunt2bin.handleProgram({
       .skipAll( grunt.config.get('global.vcs')!=='git' || !!noPush || !!noVCS )
       .packToTask('vcs_config_remote',
       'Given `global.branch` and `global.repository` options within `grunt` config, ' +
-      '\nadd a new remote named origin and configure it as upstream of the new repository.'
+      '\nadd a new remote named origin.'
     ).appendTo(main);
     //endregion
 
