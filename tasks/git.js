@@ -158,8 +158,8 @@ module.exports = function (grunt){
       {q: /^Password/i, r: opts.auth.password}
     ]
 
-    var p= spawn('git', args, {stdio:'inherit'})
-      .on('close', function () {
+    var p = spawn('git', args, {stdio:'pipe'})
+    p.on('close', function () {
         done()
       });
     p.stdout.on('data', function(d) {
