@@ -4,6 +4,9 @@ var Spinner = require('cli-spinner').Spinner;
 
 module.exports = function (grunt){
 
+  var spinner = new Spinner('processing.. %s');
+  spinner.setSpinnerString(10);
+
   grunt.registerMultiTask('githubrelease', function(){
     var done = this.async()
     var options = this.options()
@@ -29,6 +32,7 @@ module.exports = function (grunt){
       username: username,
       password: options.password
     });
+    spinner.start();
     ghApi.releases.createRelease({
       owner: username,
       repo: reponame,
@@ -38,7 +42,14 @@ module.exports = function (grunt){
       body: '\n'+options.body,
       draft: !!options.isDraft,
       prerelease: !!options.isPrerelease
-    }, done);
+    }, function (err) {
+      spinner.stop(true);
+      if (!err) grunt.log.ok('Github release ' + options.tagname +
+        ' of ' + options.username + '/'+ options.reponame + ' created',
+        options.tagname, options.username
+      )
+      done(err)
+    });
   })
 
   grunt.registerMultiTask('githubrepo', function(){
@@ -49,7 +60,12 @@ module.exports = function (grunt){
       version: "3.0.0"
     });
     ghApi.authenticate(options.auth);
-    ghApi.repos.create(options.repo, done);
+    spinner.start();
+    ghApi.repos.create(options.repo, function (err) {
+      spinner.stop(true);
+      if (!err) grunt.log.ok('Github repository ' + options.repo + ' created')
+      done(err)
+    });
   })
 
   grunt.registerMultiTask('githubauth', function(){
@@ -61,11 +77,10 @@ module.exports = function (grunt){
     ghConfig.debug = grunt.option('debug') || grunt.option('verbose')
     var ghApi = new ghClient(ghConfig);
     ghApi.authenticate(ghAuth);
-    var spinner = new Spinner('processing.. %s');
-    spinner.setSpinnerString(10);
     spinner.start();
     ghApi.repos.getAll({type: 'all'}, function (err) {
       spinner.stop(true);
+      if (!err) grunt.log.ok('Github auth successful')
       done(err)
     });
   })
