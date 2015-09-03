@@ -74,7 +74,7 @@ module.exports = function (grunt){
         grunt.log.warn('git does not have '+(global?'global ':' ')+'configuration for entry: "'+gitentry+'"')
       } else {
         grunt.config.set(gruntvar, currentConfig)
-        grunt.log.ok('Save '+(global?'global ':' ')+'git config value "'+gruntvar+'" to "'+currentConfig+'" !')
+        grunt.log.ok('Save '+(global?'global ':' ')+'git config value "'+currentConfig+'" to "'+gruntvar+'" !')
       }
       done()
     })
@@ -158,6 +158,7 @@ module.exports = function (grunt){
       {q: /^Password/i, r: opts.auth.password}
     ]
 
+    grunt.log.writeln('git '+args.join(' '))
     var p = spawn('git', args, {stdio:'pipe'})
     p.on('close', function () {
         done()
@@ -165,7 +166,7 @@ module.exports = function (grunt){
     p.stdout.on('data', function(d) {
       d = '' + d;
       answers.forEach(function(answer){
-        if (answer.q.match(d)) {
+        if (d.match(answer.q)) {
           p.stdin.write (grunt.template.process(answer.r))
         }
       })
@@ -173,7 +174,7 @@ module.exports = function (grunt){
     p.stderr.on('data', function(d) {
       d = '' + d;
       answers.forEach(function(answer){
-        if (answer.q.match(d)) {
+        if (d.match(answer.q)) {
           p.stdin.write (grunt.template.process(answer.r))
         }
       })
