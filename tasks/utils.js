@@ -34,34 +34,62 @@ module.exports = function(grunt) {
     }
     var error;
     var p = spawn(cmd.prg, cmd.args, spawnOpts)
-      .on('error', function (err) {
-        error = err
-      })
-      .on('close', function () {
-        if (options.saveTo) {
-          grunt.config.set(options.saveTo, d);
-        }
-        if (error && options.failOnError) {
-          grunt.warn(error);
-        }
-        cb();
-      });
-    p.stdout.on('data', function(d) {
-      d = '' + d;
-      (options.answers || []).forEach(function(answer){
-        if (answer.q.match(d)) {
-          p.stdin.write (grunt.template.process(answer.r))
-        }
-      })
+    p.on('error', function (err) {
+      error = err
     })
-    p.stderr.on('data', function(d) {
-      d = '' + d;
-      (options.answers || []).forEach(function(answer){
-        if (answer.q.match(d)) {
-          p.stdin.write (grunt.template.process(answer.r))
-        }
-      })
-    })
+    p.on('close', function () {
+      if (options.saveTo) {
+        grunt.config.set(options.saveTo, d);
+      }
+      if (error && options.failOnError) {
+        grunt.warn(error);
+      }
+      cb();
+    });
+
+    var hasStdin = true
+    var hasStdout = true
+    var hasStderr = true
+    if (spawnOpts.stdio.match
+      && spawnOpts.stdio.match(/inhe/)) {
+      hasStdin = false
+      hasStdout = false
+      hasStderr = false
+    } else {
+      if (spawnOpts.stdio[0] && spawnOpts.stdio[0].match(/inhe/)){
+        hasStdin = false
+      }
+      if (spawnOpts.stdio[1] && spawnOpts.stdio[1].match(/inhe/)){
+        hasStdout = false
+      }
+      if (spawnOpts.stdio[2] && spawnOpts.stdio[2].match(/inhe/)){
+        hasStderr = false
+      }
+    }
+
+    if (hasStdin) {
+      if (hasStdout) {
+        p.stdout.on('data', function(d) {
+          d = '' + d;
+          (options.answers || []).forEach(function(answer){
+            if (answer.q.match(d)) {
+              p.stdin.write (grunt.template.process(answer.r))
+            }
+          })
+        })
+      }
+      if (hasStderr) {
+        p.stderr.on('data', function(d) {
+          d = '' + d;
+          (options.answers || []).forEach(function(answer){
+            if (answer.q.match(d)) {
+              p.stdin.write (grunt.template.process(answer.r))
+            }
+          })
+        })
+      }
+    }
+
     grunt.verbose.writeln('Command:', cmd);
   });
 
