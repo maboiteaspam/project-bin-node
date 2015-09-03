@@ -333,7 +333,6 @@ grunt2bin.handleProgram({
         }
       ))
       .appendTask( git.addOrigin('vcs_add_origin', '<%=global.repository%>') )
-      .appendTask( git.setUpstream('vcs_set_upstream', '<%=global.branch%>') )
       .skipAll( grunt.config.get('global.vcs')!=='git' || !!noPush || !!noVCS )
       .packToTask('vcs_config_remote',
       'Given `global.branch` and `global.repository` options within `grunt` config, ' +
@@ -344,7 +343,11 @@ grunt2bin.handleProgram({
 
     //region -------------------------- vcs push
     TasksWorkflow()
-      .appendTask( git.push('vcs_push', {auth: '<%=global.gh.auth%>'}) )
+      .appendTask( git.push('vcs_push', {
+        auth: '<%=global.gh.auth%>',
+        branch:'<%=global.branch%>',
+        upstream:true}
+      ))
       .skipAll( grunt.config.get('global.vcs')!=='git' || !!noPush || !!noVCS )
       .packToTask('vcs_push',
       'Given `global.git` option in `grunt` config, ' +
