@@ -101,7 +101,7 @@ grunt2bin.handleProgram({
       .packToTask('check_auth',
       'Ensure the various auth mechanism involved works properly ' +
       '\nbefore anything is started.'
-    ).appendTo(main);
+    ).skipAll(!!noVCS).appendTo(main);
     //endregion
 
     //region -------------------------- proper config.
