@@ -9,18 +9,6 @@ var _ = require('underscore')
 
 var argsObj = cliargs.parse();
 
-if(argsObj.help || argsObj.h){
-  return showusage(path.join(__dirname, '..'), pkg.name, 'Usage')
-}
-
-if(argsObj.version){
-  console.log('%s %s', pkg.name, pkg.version);
-  process.exit(1 /* ? is correct ? */);
-}
-
-var wdPath = argsObj.path || argsObj.p || process.cwd();
-wdPath = path.resolve(wdPath)+'/';
-
 var noCommit = 'nocommit' in argsObj || 'n' in argsObj;
 var noPush = 'nopush' in argsObj;
 var noVCS = 'novcs' in argsObj;
@@ -28,6 +16,9 @@ var layout = argsObj.layout || argsObj.l || 'lambda';
 var bin = argsObj.bin || argsObj.b || false;
 var templatePath = __dirname + '/../templates';
 
+
+var wdPath = argsObj.path || argsObj.p || process.cwd();
+wdPath = path.resolve(wdPath)+'/';
 if (argsObj.path || argsObj.p) {
   process.chdir(wdPath);
 }
@@ -71,6 +62,9 @@ grunt2bin.handleProgram({
             type: 'client',
             username: '',
             password: ''
+          },
+          config:{
+            version: '3.0.0'
           }
         },
         'node': {
@@ -95,8 +89,6 @@ grunt2bin.handleProgram({
         }
       }
     })
-    // -
-    grunt.setUserGruntfile('project-init.js')
   },
   // -
   run: function(main, grunt, cwd){
@@ -192,7 +184,7 @@ grunt2bin.handleProgram({
       .skipAll(!bin)
       .packToTask('bin_setup',
       'Only when `-b|--bin` option is provided.' +
-      '\nRe-configures the `package.json` file and create new bin files structure given their template.'
+      '\nRe-configures the `package.json` file and create new bin files structure given `bin` template.'
     ).appendTo(main);
     //endregion
 
@@ -221,8 +213,8 @@ grunt2bin.handleProgram({
       )).skipLastTask(!layout.match(/bower/g))
 
       .packToTask('layout_make',
-      'Only when `-l|--layout` option is provided.' +
-      '\nRe-configures the `package.json` file and create new bin files structure given their template.'
+      'If `-l|--layout` option is not provided, default to lambda.' +
+      '\nInitialize the module files structure given the layouts provided.'
     ).appendTo(main);
     //endregion
 
@@ -311,7 +303,7 @@ grunt2bin.handleProgram({
       .appendTask( file.jsonFormat('bower_pkg_format', 'bower.json') )
       .appendTask( file.jsonFormat('node_pkg_format', 'package.json') )
       .packToTask('cleanup',
-      'Clean up to re format `json` files.'
+      'Ensure `json` files are human readable after templates are done.'
     ).appendTo(main);
     //endregion
 
@@ -327,7 +319,7 @@ grunt2bin.handleProgram({
       .skipAll(grunt.config.get('global.vcs')!=='git' || !!noPush || !!noVCS)
       .packToTask('vcs_apply',
       'Given `global.init_message` option in `grunt` config,' +
-      '\napplies a new vcs on the current directory (init, add, commit).'
+      '\ninitializes a vcs on the current directory (init, add, commit).'
     ).appendTo(main);
     //endregion
 
@@ -344,8 +336,8 @@ grunt2bin.handleProgram({
       .appendTask( git.setUpstream('vcs_set_upstream', '<%=global.branch%>') )
       .skipAll( grunt.config.get('global.vcs')!=='git' || !!noPush || !!noVCS )
       .packToTask('vcs_config_remote',
-      'Given `global.branch` and `global.repository` options from global `grunt` config, ' +
-      '\nadd a new remote named origin and configure it as upstream to the new repository.'
+      'Given `global.branch` and `global.repository` options within `grunt` config, ' +
+      '\nadd a new remote named origin and configure it as upstream of the new repository.'
     ).appendTo(main);
     //endregion
 
