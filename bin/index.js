@@ -308,6 +308,33 @@ grunt2bin.handleProgram({
     //endregion
 
 
+    //region -------------------------- dependencies installation
+    TasksWorkflow()
+      .appendTask( misc.installPackages('npm_i_s',
+        grunt.config.get('global.node.packages') || []
+      ))
+      .appendTask( misc.installPackages('npm_i_d',
+        grunt.config.get('global.node.devPackages') || [],
+        'save-dev'
+      ))
+      .appendTask( misc.installPackages('npm_i_g',
+        grunt.config.get('global.node.globalPackages') || [],
+        'global'
+      ))
+      .appendTask( misc.installPackages('bower_i_s',
+        grunt.config.get('global.bower.packages') || [],
+        'save', 'bower'
+      ))
+      .appendTask( misc.installPackages('bower_i_d',
+        grunt.config.get('global.bower.devPackages') || [],
+        'save-dev', 'bower'
+      ))
+      .packToTask('deps_install',
+      'Invoke npm i and bower i'
+    ).appendTo(main);
+    //endregion
+
+
     //region -------------------------- vcs apply
     TasksWorkflow()
       .appendTask( git.init('vcs_init') )
@@ -352,33 +379,6 @@ grunt2bin.handleProgram({
       .packToTask('vcs_push',
       'Given `global.git` option in `grunt` config, ' +
       '\npush the new repository to the remote origin.'
-    ).appendTo(main);
-    //endregion
-
-
-    //region -------------------------- dependencies installation
-    TasksWorkflow()
-      .appendTask( misc.installPackages('npm_i_s',
-        grunt.config.get('global.node.packages') || []
-      ))
-      .appendTask( misc.installPackages('npm_i_d',
-        grunt.config.get('global.node.devPackages') || [],
-        'save-dev'
-      ))
-      .appendTask( misc.installPackages('npm_i_g',
-        grunt.config.get('global.node.globalPackages') || [],
-        'global'
-      ))
-      .appendTask( misc.installPackages('bower_i_s',
-        grunt.config.get('global.bower.packages') || [],
-        'save', 'bower'
-      ))
-      .appendTask( misc.installPackages('bower_i_d',
-        grunt.config.get('global.bower.devPackages') || [],
-        'save-dev', 'bower'
-      ))
-      .packToTask('deps_install',
-      'Invoke npm i and bower i'
     ).appendTo(main);
     //endregion
 
