@@ -41,8 +41,11 @@ module.exports = function(grunt) {
       if (options.saveTo) {
         grunt.config.set(options.saveTo, d);
       }
+      grunt.log.writeln('Command:', cmd.prg + ' ' + cmd.args.join(' '));
       if (error && options.failOnError) {
         grunt.warn(error);
+      } else {
+        grunt.log.ok('Everything is smooth');
       }
       cb();
     });
@@ -89,8 +92,6 @@ module.exports = function(grunt) {
         })
       }
     }
-
-    grunt.verbose.writeln('Command:', cmd);
   });
 
   grunt.registerMultiTask('readfiletoconfig', function(){
@@ -152,7 +153,7 @@ module.exports = function(grunt) {
 
     function editFile(file, callback) {
       editor(file, options, function () {
-        grunt.log.ok('Got it !')
+        grunt.log.ok('All done !')
         callback();
       });
     }
@@ -190,7 +191,10 @@ module.exports = function(grunt) {
         done()
       });
     } else {
-      grunt.log.ok('Grunt config "' + varName + '" is already set to "' + defaultValue + '" !')
+      grunt.log.ok(
+        'Grunt config "' + varName + '" ' +
+        'is already set to "'+currentValue+'" ' +
+        'instead of default "' + defaultValue + '" !')
     }
   })
 
