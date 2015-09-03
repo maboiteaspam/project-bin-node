@@ -63,7 +63,7 @@ module.exports = function (grunt){
     spinner.start();
     ghApi.repos.create(options.repo, function (err) {
       spinner.stop(true);
-      if (!err) grunt.log.ok('Github repository ' + options.repo + ' created')
+      if (!err) grunt.log.ok('Github repository ' + options.repo.name + ' created')
       done(err)
     });
   })
