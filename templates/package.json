@@ -2,9 +2,9 @@
   "name": <%= JSON.stringify(projectName) %>,
   "version": <%= JSON.stringify(projectVersion) %>,
   "description": <%= JSON.stringify(description) %>,
-  "main": <%= JSON.stringify(node_pkg.entry) %>,
+  "main": <%= JSON.stringify(node.entry) %>,
   "scripts": {
-<% if(node_pkg.mocha){ %>
+<% if(node.mocha){ %>
     "test": "mocha"
 <% } %>
   },
